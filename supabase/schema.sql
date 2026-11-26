@@ -12,6 +12,9 @@ create table bp.tournaments (
   ends_on date,
   location text,
   notes text,
+  kind text not null default 'torneio' check (kind in ('torneio','treino')),
+  scope text check (scope in ('interno','parceria','externo')),
+  partner text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -55,7 +58,8 @@ grant select, insert, update, delete on public.bp_tournaments, public.bp_debates
 
 -- Analysis views (query them in the SQL Editor; not exposed through the API)
 create view bp.v_debates with (security_invoker = true) as
-select d.id, d.owner, t.name as tournament, d.stage, d.round_no, d.label, d.motion, d.my_role,
+select d.id, d.owner, t.name as tournament, t.kind as event_kind, t.scope as training_scope, t.partner,
+  d.stage, d.round_no, d.label, d.motion, d.my_role,
   d.data->'teams'->'OG'->>'name' as og, d.data->'teams'->'OO'->>'name' as oo,
   d.data->'teams'->'CG'->>'name' as cg, d.data->'teams'->'CO'->>'name' as co,
   d.result->'order' as final_order, d.result->'advance' as advanced, d.result->>'winner' as winner,

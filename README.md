@@ -9,6 +9,7 @@ A flow sheet for judging British Parliamentary (BP) debates: take notes, deliber
 - Deliberation with all 6 pairwise comparisons, wing votes, splits resolved per comparison and Ranked Pairs for cycles.
 - Speaker points checked against the ranking.
 - Tournaments with prelims, octos, quarters, semis and final.
+- Practices, separate from tournaments: internal to your debating society, joint with another society, or external.
 - Queries and export to JSON and CSV.
 
 It is a single `index.html` file: no build step and nothing to install. The interface is available in Portuguese (default), English and Spanish; switch with the language selector in the header.
@@ -39,6 +40,8 @@ Never use the `secret` or `service_role` key in the browser. The app rejects tho
 Google sign-in is optional and only works if you enable the Google provider in your project.
 
 To bring over notes you took in local mode, export the JSON before connecting and use **Importar JSON** afterwards.
+
+Already set up with an older `schema.sql`? Run [`supabase/migrations/002_trainings.sql`](supabase/migrations/002_trainings.sql) once to enable practices.
 
 Each user only sees their own tournaments and debates (Row Level Security). For analysis, the schema creates the views `bp.v_debates`, `bp.v_arguments` and `bp.v_speaks`, which you can query in the SQL Editor.
 
