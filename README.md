@@ -9,7 +9,7 @@ A flow sheet for judging British Parliamentary (BP) debates: take notes, deliber
 - Deliberation with all 6 pairwise comparisons, wing votes, splits resolved per comparison and Ranked Pairs for cycles.
 - Speaker points checked against the ranking.
 - Tournaments with prelims, octos, quarters, semis and final.
-- Practices, separate from tournaments: internal to your debating society, joint with another society, or external.
+- Practices, separate from tournaments: internal to your debating society (SD), joint with another debating society, or external.
 - Queries and export to JSON and CSV.
 
 It is a single `index.html` file: no build step and nothing to install. The interface is available in Portuguese (default), English and Spanish; switch with the language selector in the header.
