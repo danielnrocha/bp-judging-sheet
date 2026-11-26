@@ -13,6 +13,7 @@ let pending = false,
 function save() {
   if (!D) return;
   S.args.forEach(syncTo);
+  dropInc();
   S._t = Date.now();
   try {
     localStorage.setItem('bp.cache.' + D.id, JSON.stringify(S));

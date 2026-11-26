@@ -19,21 +19,33 @@ document.addEventListener('submit', e => {
     imp: '',
     note: '',
     q: q.q,
-    kind: 'c',
+    kind: q.kind || 'c',
     to: [],
     links: [],
     ax: {},
+    axt: {},
     res: ''
   };
   S.args.push(na);
   if (q.link) {
     const tgt = S.args.find(x => x !== na && code(x).toUpperCase() === q.link.code);
-    if (tgt) setLink(na, tgt.id, q.link.t, q.link.s);
-    else toast('Não achei ' + q.link.code + ' para ligar');
+    if (!tgt) toast('Não achei ' + q.link.code + ' para ligar');
+    else if (!linkOptions(na, tgt).includes(q.link.t))
+      toast(
+        linkOptions(na, tgt).length
+          ? 'Daqui para ' +
+              code(tgt) +
+              ' só dá: ' +
+              linkOptions(na, tgt)
+                .map(t => LINKV[t])
+                .join(' ou ')
+          : linkWhyNot(na, tgt)
+      );
+    else setLink(na, tgt.id, q.link.t, q.link.s);
   }
   if (q.ax) {
     const x = S.axes[q.ax - 1];
-    if (x) na.ax[x.id] = 2;
+    if (x) setAx(na, x.id, 2, q.axt || 'a');
   }
   save();
   renderFlow();
@@ -381,12 +393,15 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.dataset.act === 'link') {
     const a = argOf(t);
-    const tgt = t.value && argById(t.value);
-    if (tgt) {
-      const ty = t.closest('.det')?.querySelector('[data-act=ltype]')?.value || linkOptions(a, tgt)[0];
-      setLink(a, tgt.id, ty);
-    }
+    const [ty, id] = (t.value || '').split(':');
+    const tgt = id && argById(id);
+    if (tgt && linkOptions(a, tgt).includes(ty)) setLink(a, tgt.id, ty);
     save();
+    renderFlow();
+    return;
+  }
+  if (t.dataset.act === 'ltype') {
+    LTYPE[argOf(t).id] = t.value;
     renderFlow();
     return;
   }

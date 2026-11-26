@@ -229,11 +229,13 @@ window.BP_I18N_EXTRA = {
   },
   rules: pick => [
     [
-      /^(responde|flipa|complementa|verticaliza)(?: \((fraca|média|forte)\))? (\S+)$/,
+      /^(responde|flipa|mitiga|sopesa|complementa|verticaliza)(?: \((fraca|média|forte)\))? (\S+)$/,
       m => {
         const v = {
           responde: ['responds to', 'responde a'],
           flipa: ['flips', 'voltea'],
+          mitiga: ['mitigates', 'mitiga'],
+          sopesa: ['weighs against', 'sopesa'],
           complementa: ['complements', 'complementa'],
           verticaliza: ['deepens', 'profundiza']
         }[m[1]];
@@ -242,11 +244,13 @@ window.BP_I18N_EXTRA = {
       }
     ],
     [
-      /^↳ (responde|flipa|complementa|verticaliza)(?: \((fraca|média|forte)\))?$/,
+      /^↳ (responde|flipa|mitiga|sopesa|complementa|verticaliza)(?: \((fraca|média|forte)\))?$/,
       m => {
         const v = {
           responde: ['responds', 'responde'],
           flipa: ['flips', 'voltea'],
+          mitiga: ['mitigates', 'mitiga'],
+          sopesa: ['weighs against', 'sopesa'],
           complementa: ['complements', 'complementa'],
           verticaliza: ['deepens', 'profundiza']
         }[m[1]];
@@ -347,3 +351,347 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
   ],
   Recarregar: ['Reload', 'Recargar']
 });
+/* rodada 2: regras de ligação, caracterização, engajamento com eixos, POIs, pendências, tutorial */
+Object.assign(window.BP_I18N_EXTRA.dict, {
+  Caracterização: ['Characterization', 'Caracterización'],
+  'Clashes, métricas e caracterizações': [
+    'Clashes, metrics and characterizations',
+    'Clashes, métricas y caracterizaciones'
+  ],
+  Argumenta: ['Argues', 'Argumenta'],
+  'Comparativa / sopesamento': ['Comparison / weighing', 'Comparativa / sopesamiento'],
+  Comparativa: ['Comparison', 'Comparativa'],
+  Relevância: ['Relevance', 'Relevancia'],
+  Força: ['Strength', 'Fuerza'],
+  Desligar: ['Unlink', 'Desenlazar'],
+  'Escolher...': ['Choose...', 'Elegir...'],
+  'Nenhuma ligação possível ainda para este argumento.': [
+    'No possible link for this argument yet.',
+    'Ningún enlace posible aún para este argumento.'
+  ],
+  'Um argumento não se liga a ele mesmo.': [
+    'An argument cannot link to itself.',
+    'Un argumento no se enlaza consigo mismo.'
+  ],
+  'Complementa liga a segunda fala à primeira da dupla; os dois são da mesma fala.': [
+    'Complements links the second speech to the first of the pair; both are from the same speech.',
+    'Complementa enlaza el segundo discurso con el primero de la dupla; ambos son del mismo discurso.'
+  ],
+  'Verticaliza só vale do closing para o opening da mesma bancada.': [
+    'Deepens only goes from closing to the opening on the same bench.',
+    'Profundiza solo va del cierre a la apertura de la misma bancada.'
+  ],
+  '+ clash, m: métrica ou k: caracterização, Enter': [
+    '+ clash, m: metric or k: characterization, Enter',
+    '+ clash, m: métrica o k: caracterización, Enter'
+  ],
+  'Nenhum clash, métrica ou caracterização ainda.': [
+    'No clashes, metrics or characterizations yet.',
+    'Ningún clash, métrica o caracterización aún.'
+  ],
+  'Escreva na barra acima e dê Enter. Comece com m: para métrica ou k: para caracterização. Depois ligue os argumentos: arraste o código até o eixo, ou abra os detalhes do cartão. Um argumento pode argumentar dentro do eixo, fazer comparativa ou sopesamento, ou mostrar por que o eixo é relevante.':
+    [
+      'Type in the bar above and press Enter. Start with m: for a metric or k: for a characterization. Then link arguments: drag the code onto the axis, or open the card details. An argument can argue within the axis, compare or weigh, or show why the axis is relevant.',
+      'Escribe en la barra de arriba y pulsa Enter. Empieza con m: para métrica o k: para caracterización. Luego enlaza los argumentos: arrastra el código hasta el eje, o abre los detalles de la tarjeta. Un argumento puede argumentar dentro del eje, comparar o sopesar, o mostrar por qué el eje es relevante.'
+    ],
+  'Clash: choque central. Métrica: critério para pesar. Caracterização: como cada lado descreve um ator ou o mundo.': [
+    'Clash: central conflict. Metric: weighing criterion. Characterization: how each side describes an actor or the world.',
+    'Clash: choque central. Métrica: criterio para sopesar. Caracterización: cómo cada lado describe a un actor o el mundo.'
+  ],
+  POI: ['POI', 'POI'],
+  'Registrar um POI (atalho: P)': ['Log a POI (shortcut: P)', 'Registrar un POI (atajo: P)'],
+  'Fora da janela de POIs (tempo protegido).': [
+    'Outside the POI window (protected time).',
+    'Fuera de la ventana de POIs (tiempo protegido).'
+  ],
+  Cronometrar: ['Time it', 'Cronometrar'],
+  'Quem fez': ['Who offered', 'Quién lo hizo'],
+  'O que foi perguntado ou afirmado': ['What was asked or stated', 'Qué se preguntó o afirmó'],
+  Resposta: ['Answer', 'Respuesta'],
+  'Como foi': ['How it went', 'Cómo fue'],
+  'POI levou': ['POI won', 'Ganó el POI'],
+  'Resposta levou': ['Answer won', 'Ganó la respuesta'],
+  Neutro: ['Neutral', 'Neutro'],
+  Recusado: ['Declined', 'Rechazado'],
+  recusado: ['declined', 'rechazado'],
+  'Oferecido e recusado pelo orador': ['Offered and declined by the speaker', 'Ofrecido y rechazado por el orador'],
+  'POI longo: o orador pode cortar': ['Long POI: the speaker may cut it', 'POI largo: el orador puede cortarlo'],
+  'Escolha quem fez o POI': ['Choose who offered the POI', 'Elige quién hizo el POI'],
+  'POI recusado registrado': ['Declined POI logged', 'POI rechazado registrado'],
+  'POI registrado': ['POI logged', 'POI registrado'],
+  'POI apagado': ['POI deleted', 'POI borrado'],
+  'nenhum POI aceito': ['no POI taken', 'ningún POI aceptado'],
+  'POIs feitos': ['POIs offered', 'POIs hechos'],
+  'registrar um POI no discurso atual': ['log a POI in the current speech', 'registrar un POI en el discurso actual'],
+  Pendências: ['To check', 'Pendientes'],
+  'Pendências antes de votar': ['Things to check before voting', 'Pendientes antes de votar'],
+  'Nada pendente no flow.': ['Nothing pending in the flow.', 'Nada pendiente en el flow.'],
+  'O que ainda falta decidir ou checar antes de votar.': [
+    'What is still to decide or check before voting.',
+    'Lo que falta decidir o revisar antes de votar.'
+  ],
+  'é forte e ninguém respondeu: pesa na comparação.': [
+    'is strong and unanswered: it weighs in the comparison.',
+    'es fuerte y nadie respondió: pesa en la comparación.'
+  ],
+  'foi respondido: ficou de pé, mitigado ou caiu?': [
+    'was answered: did it stand, get mitigated or fall?',
+    'fue respondido: ¿quedó en pie, mitigado o cayó?'
+  ],
+  'foi flipado: o flip se sustenta? Marque o veredito.': [
+    'was flipped: does the flip hold? Set the verdict.',
+    'fue volteado: ¿se sostiene? Marca el veredicto.'
+  ],
+  '(closing): é novo em relação ao opening? Se aprofunda, ligue com verticaliza.': [
+    '(closing): is it new relative to the opening? If it deepens it, link with deepens.',
+    '(cierre): ¿es nuevo respecto de la apertura? Si profundiza, enlaza con profundiza.'
+  ],
+  'Falta o sopesamento entre clashes e métricas (lente Por métrica).': [
+    'The weighing between clashes and metrics is missing (By metric view).',
+    'Falta el sopesamiento entre clashes y métricas (vista Por métrica).'
+  ],
+  Confronto: ['Clash', 'Choque'],
+  ': quem levou?': [': who won?', ': ¿quién ganó?'],
+  Tutorial: ['Tutorial', 'Tutorial'],
+  'Tutorial interativo': ['Interactive tutorial', 'Tutorial interactivo'],
+  Pular: ['Skip', 'Saltar'],
+  Voltar: ['Back', 'Atrás'],
+  Próximo: ['Next', 'Siguiente'],
+  Concluir: ['Done', 'Terminar'],
+  Navegação: ['Navigation', 'Navegación'],
+  'Comece por aqui': ['Start here', 'Empieza aquí'],
+  'Torneios e treinos guardam os seus debates. Consultas tem números e exportação; Guia, as regras de BP.': [
+    'Tournaments and practices keep your debates. Queries has numbers and exports; Guide, the BP rules.',
+    'Torneos y entrenamientos guardan tus debates. Consultas tiene números y exportación; Guía, las reglas de BP.'
+  ],
+  'Crie um torneio (ou treino) e depois um debate. Com um debate aberto, clique em Tutorial de novo para ver a ficha.':
+    [
+      'Create a tournament (or practice) and then a debate. With a debate open, click Tutorial again to tour the sheet.',
+      'Crea un torneo (o entrenamiento) y luego un debate. Con un debate abierto, haz clic en Tutorial de nuevo para ver la ficha.'
+    ],
+  Moção: ['Motion', 'Moción'],
+  'Escreva a moção aqui, ou puxe tudo do Tabbycat na Preparação.': [
+    'Type the motion here, or pull everything from Tabbycat in Setup.',
+    'Escribe la moción aquí, o trae todo de Tabbycat en la Preparación.'
+  ],
+  Preparação: ['Setup', 'Preparación'],
+  'Fase, painel, nomes e o Tabbycat: cole sua URL privada e clique em Puxar para trazer rodada, moção, equipes e painel.':
+    [
+      'Stage, panel, names and Tabbycat: paste your private URL and click Pull to bring round, motion, teams and panel.',
+      'Fase, panel, nombres y Tabbycat: pega tu URL privada y haz clic en Traer para obtener ronda, moción, equipos y panel.'
+    ],
+  'Espaço inicia e pausa. Clique no relógio para mudar a duração (7, 5, 4 min...), o tempo protegido e ajustar ±10 s.':
+    [
+      'Space starts and pauses. Click the clock to change the length (7, 5, 4 min...), protected time and adjust ±10 s.',
+      'Espacio inicia y pausa. Haz clic en el reloj para cambiar la duración (7, 5, 4 min...), el tiempo protegido y ajustar ±10 s.'
+    ],
+  'Abre um mini modal com cronômetro do POI: escolha quem fez (só o lado oposto), o POI e a resposta. Atalho: P.': [
+    'Opens a small dialog with a POI timer: choose who offered (only the other side), the POI and the answer. Shortcut: P.',
+    'Abre un mini modal con cronómetro del POI: elige quién lo hizo (solo el lado opuesto), el POI y la respuesta. Atajo: P.'
+  ],
+  'Nomeie os eixos do debate. Escreva e dê Enter; use "m:" para métrica e "k:" para caracterização. Toque num eixo para destacar os argumentos dele.':
+    [
+      'Name the axes of the debate. Type and press Enter; use "m:" for a metric and "k:" for a characterization. Tap an axis to highlight its arguments.',
+      'Nombra los ejes del debate. Escribe y pulsa Enter; usa "m:" para métrica y "k:" para caracterización. Toca un eje para destacar sus argumentos.'
+    ],
+  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, +PM1 complementa, ^PM1 verticaliza, *texto caracterização, #1 liga ao 1º eixo, " !" forte.':
+    [
+      'One line per idea, Enter. Text shortcuts: >LO1 responds, ~LO1 flips, +PM1 complements, ^PM1 deepens, *text characterization, #1 links to the 1st axis, " !" strong.',
+      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, +PM1 complementa, ^PM1 profundiza, *texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
+    ],
+  'Arraste para ligar': ['Drag to link', 'Arrastra para enlazar'],
+  'Arraste o código até outro argumento: responde ou flipa o outro lado; complementa a primeira fala da dupla (só segundas falas); verticaliza o opening (só closing). Solte num eixo para argumentar, comparar ou mostrar relevância.':
+    [
+      'Drag the code onto another argument: respond to or flip the other side; complement the first speech of the pair (second speakers only); deepen the opening (closing only). Drop it on an axis to argue, compare or show relevance.',
+      'Arrastra el código hasta otro argumento: responde o voltea al otro lado; complementa el primer discurso de la dupla (solo segundos oradores); profundiza la apertura (solo cierre). Suéltalo en un eje para argumentar, comparar o mostrar relevancia.'
+    ],
+  'Cartão do argumento': ['Argument card', 'Tarjeta del argumento'],
+  'Toque para selecionar: 1 2 3 dão a qualidade, S M C o veredito. A seta abre mecanismo, impacto, ligações e eixos.': [
+    'Tap to select: 1 2 3 set quality, S M C the verdict. The arrow opens mechanism, impact, links and axes.',
+    'Toca para seleccionar: 1 2 3 dan la calidad, S M C el veredicto. La flecha abre mecanismo, impacto, enlaces y ejes.'
+  ],
+  Bancada: ['Team', 'Bancada'],
+  'Clique no nome da bancada para ver tudo dela: argumentos, ataques, POIs, eixos e suas comparativas.': [
+    'Click the team name to see everything about it: arguments, attacks, POIs, axes and your comparisons.',
+    'Haz clic en el nombre de la bancada para ver todo de ella: argumentos, ataques, POIs, ejes y tus comparaciones.'
+  ],
+  'Três jeitos de ler': ['Three ways to read', 'Tres formas de leer'],
+  'Por fala (a ficha), por ideia (cada ideia e tudo o que veio depois) e por métrica (como cada bancada engajou cada eixo, e o sopesamento).':
+    [
+      'By speech (the sheet), by idea (each idea and everything after it) and by metric (how each team engaged each axis, and the weighing).',
+      'Por discurso (la ficha), por idea (cada idea y todo lo que vino después) y por métrica (cómo cada bancada abordó cada eje, y el sopesamiento).'
+    ],
+  Foco: ['Focus', 'Foco'],
+  'Apaga o que não tem a ver com o argumento selecionado ou com o discurso atual, e encolhe a barra de cima. Atalho: F.':
+    [
+      'Dims what is unrelated to the selected argument or the current speech, and shrinks the top bar. Shortcut: F.',
+      'Atenúa lo que no tiene que ver con el argumento seleccionado o el discurso actual, y encoge la barra superior. Atajo: F.'
+    ],
+  'O que ainda falta decidir antes de votar: argumentos sem veredito, eixos sem vencedor, discursos sem POI.': [
+    'What is still to decide before voting: arguments without a verdict, axes without a winner, speeches without a POI.',
+    'Lo que falta decidir antes de votar: argumentos sin veredicto, ejes sin ganador, discursos sin POI.'
+  ],
+  'Todos os atalhos de teclado. Atalho: ?.': [
+    'All keyboard shortcuts. Shortcut: ?.',
+    'Todos los atajos de teclado. Atajo: ?.'
+  ],
+  'Comparativas par a par, votos do painel, speaks e o roteiro da oral, já com os eixos e o sopesamento. Atalho: D.': [
+    'Pairwise comparisons, panel votes, speaks and the oral adjudication script, with the axes and weighing. Shortcut: D.',
+    'Comparaciones por pares, votos del panel, speaks y el guion de la oral, con los ejes y el sopesamiento. Atajo: D.'
+  ],
+  'Antes de votar, veja o que ficou em aberto no flow.': [
+    'Before voting, see what is still open in the flow.',
+    'Antes de votar, mira lo que quedó abierto en el flow.'
+  ],
+  'Suas comparativas': ['Your comparisons', 'Tus comparaciones'],
+  'Decida cada par. Cada cartão mostra a evidência do flow: confrontos, ligações e eixos entre as duas bancadas.': [
+    'Decide each pair. Each card shows the evidence from the flow: clashes, links and axes between the two teams.',
+    'Decide cada par. Cada tarjeta muestra la evidencia del flow: choques, enlaces y ejes entre las dos bancadas.'
+  ],
+  'Registre os votos do painel; divergências aparecem marcadas.': [
+    "Record the panel's votes; disagreements are flagged.",
+    'Registra los votos del panel; las divergencias aparecen marcadas.'
+  ],
+  Resultado: ['Result', 'Resultado'],
+  'Split por comparação, desempate da chair e Ranked Pairs em ciclos.': [
+    'Split per comparison, chair tiebreak and Ranked Pairs for cycles.',
+    'Split por comparación, desempate del chair y Ranked Pairs en ciclos.'
+  ],
+  'Roteiro da oral': ['Oral adjudication script', 'Guion de la oral'],
+  'Gerado das suas comparativas, dos votos e dos clashes e métricas. Copie e ajuste.': [
+    'Generated from your comparisons, the votes and the clashes and metrics. Copy and adjust.',
+    'Generado de tus comparaciones, los votos y los clashes y métricas. Copia y ajusta.'
+  ],
+  'caracterização (de um ator, do status quo, do mundo da moção)': [
+    'characterization (of an actor, the status quo, the world of the motion)',
+    'caracterización (de un actor, del statu quo, del mundo de la moción)'
+  ],
+  'argumenta no 2º clash/métrica da barra (#2c comparativa, #2r relevância)': [
+    'argues in the 2nd clash/metric in the bar (#2c comparison, #2r relevance)',
+    'argumenta en el 2º clash/métrica de la barra (#2c comparativa, #2r relevancia)'
+  ],
+  'complementa PM1 (só segundas falas, na própria dupla)': [
+    'complements PM1 (second speakers only, within the pair)',
+    'complementa PM1 (solo segundos oradores, en la propia dupla)'
+  ],
+  'verticaliza PM1 (só closing, no opening da bancada; ^3PM1 forte, ^1PM1 fraca)': [
+    'deepens PM1 (closing only, on its own opening; ^3PM1 strong, ^1PM1 weak)',
+    'profundiza PM1 (solo cierre, en la apertura de su bancada; ^3PM1 fuerte, ^1PM1 débil)'
+  ]
+});
+{
+  const R = window.BP_I18N_EXTRA.rules;
+  window.BP_I18N_EXTRA.rules = pick => [
+    [/^(\d+) de (\d+)$/, m => m[1] + pick(' of ', ' de ') + m[2]],
+    [/^POI em (\S+)$/, m => pick('POI on ', 'POI en ') + m[1]],
+    [/^(\d+:\d\d) do discurso$/, m => m[1] + pick(' into the speech', ' del discurso')],
+    [/^Como (\S+) respondeu$/, m => pick('How ' + m[1] + ' answered', 'Cómo respondió ' + m[1])],
+    [
+      /^(\S+) não aceitou POI \(pesa no engajamento\)\.$/,
+      m =>
+        pick(m[1] + ' took no POI (counts against engagement).', m[1] + ' no aceptó POI (pesa en el involucramiento).')
+    ],
+    [
+      /^(\S+) x (\S+): falta o porquê da sua comparativa \(vai para a oral\)\.$/,
+      m =>
+        pick(
+          m[1] + ' vs ' + m[2] + ': your comparison is missing the why (it goes into the oral).',
+          m[1] + ' x ' + m[2] + ': falta el porqué de tu comparación (va a la oral).'
+        )
+    ],
+    [/^(.+): quem levou\?$/, m => m[1] + pick(': who won?', ': ¿quién ganó?')],
+    [
+      /^(.+): nenhum argumento ligado ainda\.$/,
+      m => m[1] + pick(': no arguments linked yet.', ': ningún argumento enlazado aún.')
+    ],
+    [
+      /^(\S+): (\d+) aceitos, (\d+) recusados$/,
+      m => m[1] + ': ' + m[2] + pick(' taken, ', ' aceptados, ') + m[3] + pick(' declined', ' rechazados')
+    ],
+    [
+      /^Daqui para (\S+) só dá: (.+)$/,
+      m => pick('From here to ' + m[1] + ' only: ', 'De aquí a ' + m[1] + ' solo: ') + m[2]
+    ],
+    [
+      /^Complementa só vale da segunda fala \((\S+)\) para a primeira\.$/,
+      m =>
+        pick(
+          'Complements only goes from the second speech (' + m[1] + ') to the first.',
+          'Complementa solo va del segundo discurso (' + m[1] + ') al primero.'
+        )
+    ],
+    [
+      /^O opening não liga argumentos ao seu closing: (\S+) é quem pode verticalizar (\S+)\.$/,
+      m =>
+        pick(
+          'The opening does not link to its closing: ' + m[1] + ' is the one who can deepen ' + m[2] + '.',
+          'La apertura no se enlaza con su cierre: ' + m[1] + ' es quien puede profundizar ' + m[2] + '.'
+        )
+    ],
+    [/^soma (\d+)(.*)$/, m => pick('total ', 'suma ') + m[1] + m[2]],
+    ...R(pick)
+  ];
+}
+
+/* rodada 3: mitiga, sopesa, grupos do menu de ligação, Alt, regra de ordem */
+Object.assign(window.BP_I18N_EXTRA.dict, {
+  Mitiga: ['Mitigates', 'Mitiga'],
+  Sopesa: ['Weighs', 'Sopesa'],
+  Sopesamento: ['Weighing', 'Sopesamiento'],
+  Contribui: ['Contributes', 'Contribuye'],
+  'Mitigado por': ['Mitigated by', 'Mitigado por'],
+  'Sopesado por': ['Weighed against by', 'Sopesado por'],
+  'Mitigado por:': ['Mitigated by:', 'Mitigado por:'],
+  'Sopesado por:': ['Weighed against by:', 'Sopesado por:'],
+  'Com a bancada oposta': ['With the opposing team', 'Con la bancada opuesta'],
+  'Com a própria mesa': ['With your own side', 'Con la propia mesa'],
+  'engajado, avaliar': ['engaged, assess', 'abordado, evaluar'],
+  'Escolher argumento...': ['Choose argument...', 'Elegir argumento...'],
+  'Os dois são do mesmo discurso.': ['Both are from the same speech.', 'Ambos son del mismo discurso.'],
+  'Ligações na mesma mesa vão do closing para o opening.': [
+    'Links within a side go from closing to opening.',
+    'Los enlaces en la misma mesa van del cierre a la apertura.'
+  ],
+  'mitiga LO1 (diminui o peso sem refutar)': [
+    'mitigates LO1 (reduces its weight without refuting it)',
+    'mitiga LO1 (reduce su peso sin refutarlo)'
+  ],
+  'sopesa LO1 (aceita, mas compara e diz o que pesa mais)': [
+    'weighs against LO1 (grants it, but compares and says what matters more)',
+    'sopesa LO1 (lo acepta, pero compara y dice qué pesa más)'
+  ],
+  'contribui para o 2º eixo da barra (#2s: sopesa esse eixo)': [
+    'contributes to the 2nd axis in the bar (#2s: weighs that axis)',
+    'contribuye al 2º eje de la barra (#2s: sopesa ese eje)'
+  ],
+  'mostra o atalho em cada botão': ['shows the shortcut on each button', 'muestra el atajo en cada botón'],
+  'Alt (segurar)': ['Alt (hold)', 'Alt (mantener)'],
+  'Arraste o código até algo dito antes. O menu separa: com a bancada oposta (responde, flipa, mitiga, sopesa) e com a própria mesa (complementa a dupla, ou o closing verticaliza, mitiga ou sopesa o opening). Solte num eixo para contribuir ou sopesar.':
+    [
+      'Drag the code onto something said earlier. The menu splits: with the opposing team (respond, flip, mitigate, weigh) and with your own side (complement your pair, or the closing deepens, mitigates or weighs against the opening). Drop it on an axis to contribute or weigh.',
+      'Arrastra el código hasta algo dicho antes. El menú separa: con la bancada opuesta (responde, voltea, mitiga, sopesa) y con la propia mesa (complementa la dupla, o el cierre profundiza, mitiga o sopesa la apertura). Suéltalo en un eje para contribuir o sopesar.'
+    ],
+  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 verticaliza, *texto caracterização, #1 liga ao 1º eixo, " !" forte.':
+    [
+      'One line per idea, Enter. Text shortcuts: >LO1 responds, ~LO1 flips, -LO1 mitigates, =LO1 weighs, +PM1 complements, ^PM1 deepens, *text characterization, #1 links to the 1st axis, " !" strong.',
+      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 profundiza, *texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
+    ],
+  'Todos os atalhos de teclado. Atalho: ?. Segurando Alt, cada botão mostra o seu atalho.': [
+    'All keyboard shortcuts. Shortcut: ?. Hold Alt and each button shows its shortcut.',
+    'Todos los atajos de teclado. Atajo: ?. Manteniendo Alt, cada botón muestra su atajo.'
+  ]
+});
+{
+  const R = window.BP_I18N_EXTRA.rules;
+  window.BP_I18N_EXTRA.rules = pick => [
+    [
+      /^(\S+) fala antes de (\S+): ligue a partir de (\S+)\.$/,
+      m =>
+        pick(
+          m[1] + ' speaks before ' + m[2] + ': link from ' + m[3] + '.',
+          m[1] + ' habla antes de ' + m[2] + ': enlaza desde ' + m[3] + '.'
+        )
+    ],
+    ...R(pick)
+  ];
+}

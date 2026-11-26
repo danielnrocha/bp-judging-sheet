@@ -5,10 +5,13 @@
 A flow sheet for judging British Parliamentary (BP) debates: take notes, deliberate and keep a history of every round, following the WUDC adjudication manual. The app itself is titled "Ficha BP" (Portuguese for "BP sheet").
 
 - Flow by speech: claims, mechanism, impact, quality, and whether each argument stood.
-- Typed links between arguments: responds, flips, complements (same team) and deepens ("verticaliza", closing over its opening, with strength). Drag an argument's code onto another argument to link it.
-- Clashes and metrics: name the central clashes and weighing metrics of the debate, link arguments to them with a strength, set relevance, who introduced and who won each one, and write the weighing between them.
+- Typed links between arguments, always from a later speech to something said earlier. With the opposing team: responds, flips, mitigates (reduces its weight without refuting it) and weighs ("sopesa": grants it, but says what matters more). With your own side: complements (second speaker on their partner) and, from closing to its own opening, deepens ("verticaliza", with strength), mitigates or weighs. Drag an argument's code onto another argument; the menu shows the two groups separately and explains when a link is not allowed.
+- Clashes, metrics and characterizations: name the central clashes, weighing metrics and characterizations (how each side describes an actor or the world of the motion), link arguments to them with a strength (contributing to the axis, or weighing it), set relevance, who introduced and who won each one, and write the weighing between them.
+- POIs: a POI button (or `P`) opens a small dialog with its own timer; only the other side can offer. Log who offered, the POI, the answer and how it went, or that it was declined. Speeches that took no POI are flagged.
+- A "to check" list before voting: unanswered strong arguments, arguments without a verdict, closing material that may not be new, axes without a winner, missing weighing, speeches without a POI.
+- An interactive tutorial (button at the top) that highlights each part of the screen with a tip; it can be skipped.
 - Three views of the same debate: by speech, by idea (each idea with everything that came after it) and by metric (how each team engaged each clash or metric).
-- Focus mode that dims everything not related to the selected argument (or to the current speech).
+- Focus mode that dims everything not related to the selected argument (or to the current speech) and shrinks the top bar to one line. The top bar also shrinks while you type in the flow or scroll down.
 - Click a team's header to see everything about it: names, numbers, arguments per speech, clashes and metrics, and your comparisons.
 - Direct clashes between arguments and who won each one.
 - Deliberation with all 6 pairwise comparisons, wing votes, splits resolved per comparison and Ranked Pairs for cycles.
@@ -62,9 +65,9 @@ Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Doc
 
 ## Taking notes fast
 
-- Type an idea and press Enter. Prefixes link it as you type: `>LO1 text` responds to LO1, `~LO1 text` flips it, `+PM1 text` complements PM1, `^PM1 text` deepens it (`^3PM1` strong, `^1PM1` weak). `#2` links it to the 2nd clash or metric. Ending with ` !` marks it strong, ` ?` weak.
-- Drag the code of an argument (e.g. `LO1`) onto another argument to link them, or onto a clash or metric in the bar above the flow.
-- With an argument selected: `1` `2` `3` quality, `P` `M` `C` standing / mitigated / fell, `E` details, `Del` delete. Elsewhere: `Space` timer, `N` new idea, `]` `[` next / previous speech, `+` `-` adjust 10 s, `F` focus, `V` switch view, `D` deliberation, `?` all shortcuts.
+- Type an idea and press Enter. Prefixes link it as you type: `>LO1 text` responds to LO1, `~LO1` flips it, `-LO1` mitigates it, `=LO1` weighs against it, `+PM1` complements PM1, `^PM1` deepens it (`^3PM1` strong, `^1PM1` weak). `*text` is a characterization. `#2` links it to the 2nd clash or metric (`#2s` weighs that axis). Ending with ` !` marks it strong, ` ?` weak. A link the rules do not allow is not made, and a message says why.
+- Drag the code of an argument (e.g. `LO1`) onto another argument to link them, or onto a clash, metric or characterization in the bar above the flow.
+- With an argument selected: `1` `2` `3` quality, `S` `M` `C` standing / mitigated / fell, `E` details, `Del` delete. Elsewhere: `Space` timer, `N` new idea, `P` POI, `]` `[` next / previous speech, `+` `-` adjust 10 s, `F` focus, `V` switch view, `D` deliberation, `?` all shortcuts. Hold `Alt` to see each button's shortcut on the button itself.
 - Click the clock to change speech length (7, 5, 4, 3 minutes or any value), protected time and deliberation time.
 
 ## Tabbycat
@@ -116,18 +119,21 @@ No build step: plain scripts that share globals, loaded in order by `index.html`
 | `js/save.js` | Saving and syncing |
 | `js/results.js` | Pairwise results, Ranked Pairs, out-rounds, speaker points |
 | `js/flow.js` | Argument cards, speech view, setup, direct clashes |
-| `js/lenses.js` | View switcher, by-idea view, focus mode and selection |
-| `js/axes.js` | Clashes and metrics: bar, editor, by-metric view |
-| `js/drag.js` | Drag to link (pointer events: mouse, pen and touch) |
+| `js/lenses.js` | View switcher, by-idea view, focus mode, selection, compact top bar |
+| `js/axes.js` | Clashes, metrics and characterizations: bar, editor, by-metric view |
+| `js/drag.js` | Drag to link, and the link menus (pointer events: mouse, pen and touch) |
 | `js/teams.js` | Team modal |
+| `js/poi.js` | POI dialog, POI timer, POIs shown in each speech |
+| `js/pending.js` | The "to check" list before voting |
+| `js/tour.js` | Interactive tutorial |
 | `js/delib.js` | Deliberation and oral adjudication script |
 | `js/home.js`, `js/consultas.js`, `js/router.js` | Tournaments, queries and exports, routing |
 | `js/ui.js`, `js/events.js` | Toast, modal and the event handlers |
-| `js/timer.js`, `js/shortcuts.js` | Timer and keyboard shortcuts |
+| `js/timer.js`, `js/shortcuts.js` | Timer, keyboard shortcuts, quick syntax, Alt key hints |
 | `js/tabby.js` | Tabbycat import |
 | `js/boot.js` | Sign-in, storage modal, import, start-up |
 
-Feature modules register their buttons in `ACTS` (`data-act="name"`), so `events.js` does not need to know about them. The service worker (`sw.js`) lists every file to cache: add new files there too.
+Feature modules register their buttons in `ACTS` (`data-act="name"`), so `events.js` does not need to know about them. A button gets a shortcut badge (shown while Alt is held) with `data-key="X"`. New interface text in Portuguese needs its English and Spanish entry in `js/i18n-extra.js`. The service worker (`sw.js`) lists every file to cache: add new files there too.
 
 ## Tests
 
@@ -136,7 +142,7 @@ pip install playwright && playwright install chromium
 python tests/serve.py &        # static server for the tests that need http://localhost:8765
 python tests/test_local.py     # local mode, export and import
 python tests/test_flow.py      # full flow against a mocked Supabase
-python tests/test_v2.py        # links, clashes and metrics, views, focus, timer, shortcuts, Tabbycat (mocked)
+python tests/test_v2.py        # links and their rules, axes, views, focus, POIs, to-check list, tutorial, timer, shortcuts, Tabbycat (mocked)
 ```
 
 Use `tests/serve.py` rather than `python -m http.server`: the stock server refuses some of the app's parallel requests on Windows.

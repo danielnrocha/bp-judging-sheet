@@ -51,16 +51,34 @@ const HINT = {
   'OO-CO': 'Mesma bancada. Só o novo do CO conta, e precisa ser consistente com o OO.',
   'CG-CO': 'Duelo do closing: extensão contra extensão e quem venceu os choques finais.'
 };
-const KIND = { c: 'Construtivo', r: 'Resposta', x: 'Extensão', p: 'Pesagem', i: 'POI' };
+const KIND = { c: 'Construtivo', k: 'Caracterização', r: 'Resposta', x: 'Extensão', p: 'Sopesamento', i: 'POI' };
 const QUAL = { f: 'Forte', m: 'Ok', w: 'Fraco' };
 const RES = { pe: 'De pé', mi: 'Mitigado', cai: 'Caiu' };
-/* Ligações entre argumentos. r e f atacam (lado oposto); c e v somam (mesmo lado). */
-const LINK = { r: 'Responde', f: 'Flipa', c: 'Complementa', v: 'Verticaliza' };
-const LINKV = { r: 'responde', f: 'flipa', c: 'complementa', v: 'verticaliza' };
-const LINKIN = { r: 'Respondido por', f: 'Flipado por', c: 'Complementado por', v: 'Verticalizado por' };
+/* Ligações entre argumentos (de quem fala depois para o que foi dito antes):
+ *  r responde (refuta), f flipa (vira a favor de quem fala), m mitiga (diminui o peso sem refutar),
+ *  w sopesa (aceita, mas compara e diz o que pesa mais), c complementa (segunda fala na própria dupla),
+ *  v verticaliza (closing aprofunda o opening da mesma mesa). */
+const LINK = { r: 'Responde', f: 'Flipa', m: 'Mitiga', w: 'Sopesa', c: 'Complementa', v: 'Verticaliza' };
+const LINKV = { r: 'responde', f: 'flipa', m: 'mitiga', w: 'sopesa', c: 'complementa', v: 'verticaliza' };
+const LINKIN = {
+  r: 'Respondido por',
+  f: 'Flipado por',
+  m: 'Mitigado por',
+  w: 'Sopesado por',
+  c: 'Complementado por',
+  v: 'Verticalizado por'
+};
+const ATTACK = ['r', 'f', 'm', 'w']; // engajam o outro lado (ou, no closing, o próprio opening)
+const LINK_OPP = ['r', 'f', 'm', 'w']; // com a bancada oposta
+const LINK_OWN = ['c', 'v', 'm', 'w']; // com a própria mesa
 const FORCE = { 1: 'Fraca', 2: 'Média', 3: 'Forte' };
-/* Eixos do debate: clashes (choques centrais) e métricas (critérios de pesagem). */
-const AXK = { c: 'Clash', m: 'Métrica' };
+/* Eixos do debate: clashes (choques centrais), métricas (critérios de pesagem) e caracterizações
+ * (como cada lado descreve um ator, o status quo ou o mundo da moção). */
+const AXK = { c: 'Clash', m: 'Métrica', k: 'Caracterização' };
+const AXI = { c: '⚔', m: '◇', k: '◐' };
+/* Como um argumento engaja um eixo: contribui para ele, ou sopesa (diz por que ele pesa mais ou menos). */
+const AXT = { a: 'Contribui', c: 'Sopesa' };
+const AXTI = { a: '', c: '⚖' };
 const REL = { 1: 'Baixa', 2: 'Média', 3: 'Alta' };
 const CMP = { s: 'Comparado pelos debatedores', p: 'Comparado em parte', n: 'Não comparado, eu comparo' };
 const ROLE = { chair: 'Chair', wing: 'Wing', trainee: 'Trainee (não vota)', off: 'Fora do painel' };
@@ -116,7 +134,8 @@ function blankS(stage) {
     speaksOn: (stage || 'preliminar') === 'preliminar',
     cur: 0,
     axes: [],
-    weigh: ''
+    weigh: '',
+    pois: []
   };
 }
 const cleanResult = r => {
@@ -168,13 +187,21 @@ function migrate(s) {
                 .map(([k, v]) => [String(k), +v])
             )
           : {},
+      axt:
+        a.axt && typeof a.axt === 'object'
+          ? Object.fromEntries(
+              Object.entries(a.axt)
+                .map(([k, v]) => [String(k), v === 'r' ? 'c' : v])
+                .filter(([, v]) => AXT[v] && v !== 'a')
+            )
+          : {},
       open: !!a.open
     }));
   {
     const ids = new Set(s.args.map(a => a.id));
     s.args.forEach(a => {
       a.links = a.links.filter(l => l.id !== a.id && ids.has(l.id));
-      a.to = a.links.filter(l => l.t === 'r' || l.t === 'f').map(l => l.id);
+      a.to = a.links.filter(l => ATTACK.includes(l.t)).map(l => l.id);
     });
   }
   s.axes = (Array.isArray(s.axes) ? s.axes : [])
@@ -193,9 +220,26 @@ function migrate(s) {
     const ax = new Set(s.axes.map(x => x.id));
     s.args.forEach(a => {
       for (const k of Object.keys(a.ax)) if (!ax.has(k)) delete a.ax[k];
+      for (const k of Object.keys(a.axt)) if (!a.ax[k]) delete a.axt[k];
     });
   }
   delete s.tab;
+  {
+    const SPK = SP.map(x => x.k);
+    s.pois = (Array.isArray(s.pois) ? s.pois : [])
+      .filter(p => p && typeof p === 'object' && SPK.includes(p.sp) && SPK.includes(p.by))
+      .map(p => ({
+        id: String(p.id || uid()),
+        sp: p.sp,
+        by: p.by,
+        at: Number.isFinite(+p.at) ? Math.max(0, Math.round(+p.at)) : 0,
+        dur: Number.isFinite(+p.dur) ? Math.max(0, Math.round(+p.dur)) : 0,
+        q: String(p.q ?? ''),
+        a: String(p.a ?? ''),
+        ev: ['poi', 'resp', 'neu'].includes(p.ev) ? p.ev : '',
+        no: !!p.no
+      }));
+  }
   if (!Array.isArray(s.clashes)) s.clashes = [];
   s.clashes = s.clashes.filter(
     c => c && typeof c === 'object' && s.args.some(a => a.id === c.a) && s.args.some(a => a.id === c.b)

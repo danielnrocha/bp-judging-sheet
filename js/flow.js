@@ -2,14 +2,24 @@
  * A ficha do debate: cartões de argumento por discurso, preparação e confrontos diretos.
  * As outras lentes (por ideia, por métrica) ficam em lenses.js e axes.js.
  */
+/* altura do título acompanha o texto; no Chrome o CSS (field-sizing) já faz isso sozinho */
+const AUTOFIT = window.CSS && CSS.supports && CSS.supports('field-sizing', 'content');
 const fit = t => {
+  if (AUTOFIT) return;
   t.style.height = 'auto';
   t.style.height = t.scrollHeight + 'px';
 };
+/* vários de uma vez: escreve tudo, lê tudo, escreve tudo (um só cálculo de layout) */
+function fitAll(L) {
+  if (AUTOFIT) return;
+  L.forEach(t => (t.style.height = 'auto'));
+  const h = L.map(t => t.scrollHeight);
+  L.forEach((t, i) => (t.style.height = h[i] + 'px'));
+}
 const dots = n => '●'.repeat(n) + '○'.repeat(3 - n);
 const STBADGE = {
   sem: '<span class="badge w">sem resposta</span>',
-  resp: '<span class="badge">respondido, avaliar</span>',
+  resp: '<span class="badge">engajado, avaliar</span>',
   flip: '<span class="badge b">flipado</span>',
   pe: '<span class="badge g">de pé</span>',
   mi: '<span class="badge w">mitigado</span>',
@@ -33,11 +43,6 @@ function incomingHTML(a) {
 function argCard(a) {
   const t = teamOf(a);
   const cl = S.clashes.filter(c => c.a === a.id || c.b === a.id);
-  const linked = new Set(a.links.map(l => l.id));
-  const opts = S.args
-    .filter(x => x.id !== a.id && !linked.has(x.id))
-    .map(x => `<option value="${x.id}">${code(x)} · ${esc(x.title).slice(0, 40)}</option>`)
-    .join('');
   const out = a.links
     .map(l => {
       const x = argById(l.id);
@@ -48,11 +53,17 @@ function argCard(a) {
     .join('');
   const tags = S.axes
     .filter(x => a.ax[x.id])
-    .map(x => `<span class="axt" title="${esc(AXK[x.kind])}">${esc(x.title) || '?'} <i>${dots(a.ax[x.id])}</i></span>`)
+    .map(
+      x =>
+        `<span class="axt" title="${esc(AXK[x.kind])} · ${AXT[axType(a, x.id)]}">${esc(x.title) || '?'} <i>${axTag(a, x.id)}</i></span>`
+    )
     .join('');
-  return `<div class="arg T${t} ${a.res === 'cai' ? 'fallen' : ''} ${SEL === a.id ? 'sel' : ''}" data-id="${a.id}"><div class="ah"><span class="code grip" title="Arraste até outro argumento ou até um clash/métrica para ligar">${code(a)}</span><textarea class="t" data-f="title" rows="1" aria-label="Ideia">${esc(a.title)}</textarea><button class="x" data-act="toggle" title="Detalhes">${a.open ? '▴' : '▾'}</button></div>
+  return `<div class="arg T${t} ${a.res === 'cai' ? 'fallen' : ''} ${SEL === a.id ? 'sel' : ''}" data-id="${a.id}"><div class="ah"><span class="code grip" title="Arraste até outro argumento ou até um clash/métrica para ligar">${code(a)}</span><textarea class="t" data-f="title" rows="1" aria-label="Ideia">${esc(a.title)}</textarea><button class="x" data-act="toggle" data-key="E" title="Detalhes">${a.open ? '▴' : '▾'}</button></div>
 <div class="chips">${Object.entries(QUAL)
-    .map(([k, v]) => `<button class="chip q-${k} ${a.q === k ? 'on' : ''}" data-act="q" data-v="${k}">${v}</button>`)
+    .map(
+      ([k, v]) =>
+        `<button class="chip q-${k} ${a.q === k ? 'on' : ''}" data-act="q" data-v="${k}" data-key="${{ f: 1, m: 2, w: 3 }[k]}">${v}</button>`
+    )
     .join('')}<select class="ksel" data-act="kind" aria-label="Tipo">${Object.entries(KIND)
     .map(([k, v]) => `<option value="${k}" ${a.kind === k ? 'selected' : ''}>${v}</option>`)
     .join('')}</select></div>
@@ -69,25 +80,59 @@ ${
     : ''
 }
 ${incomingHTML(a)}
-${a.open ? detHTML(a, opts) : ''}</div>`;
+${a.open ? detHTML(a) : ''}</div>`;
 }
-function detHTML(a, opts) {
-  const ax = S.axes.length
-    ? `<label>Clashes e métricas (toque para dar força)</label><div class="chips">${S.axes
-        .map(
-          x =>
-            `<button class="chip ${a.ax[x.id] ? 'on' : ''}" data-act="argax" data-v="${x.id}">${esc(x.title) || '?'} <i>${dots(a.ax[x.id] || 0)}</i></button>`
-        )
-        .join('')}</div>`
-    : '';
-  return `<div class="det"><label>Por que se sustenta (mecanismo)</label><textarea data-f="why" rows="2">${esc(a.why)}</textarea><label>Impacto</label><input data-f="imp" value="${esc(a.imp)}">
-<label>Ligar a outro argumento <span class="muted">(ou arraste o código ${code(a)})</span></label><div class="row" style="flex-wrap:nowrap"><select data-act="ltype" aria-label="Tipo de ligação" style="flex:0 0 auto;width:auto">${Object.entries(
-    LINK
+/* tipo escolhido no seletor de ligação de cada cartão (não é salvo) */
+const LTYPE = {};
+const LGRP = { opp: ['Com a bancada oposta', LINK_OPP], own: ['Com a própria mesa', LINK_OWN] };
+/* Ligar pelo cartão: primeiro o tipo (separado em bancada oposta / própria mesa), depois o alvo. */
+function linkPicker(a) {
+  const linked = new Set(a.links.map(l => l.id));
+  const cand = S.args.filter(x => x.id !== a.id && !linked.has(x.id));
+  const valid = (g, t) => cand.filter(x => (g === 'opp') === isOpp(a, x) && linkOptions(a, x).includes(t));
+  const types = Object.entries(LGRP).flatMap(([g, [, L]]) => L.filter(t => valid(g, t).length).map(t => g + ':' + t));
+  if (!types.length) return '<div class="small muted">Nenhuma ligação possível ainda para este argumento.</div>';
+  const cur = types.includes(LTYPE[a.id]) ? LTYPE[a.id] : types[0];
+  const [g, t] = cur.split(':');
+  return `<div class="row" style="flex-wrap:nowrap"><select data-act="ltype" aria-label="Tipo de ligação" style="flex:0 1 auto;width:auto">${Object.entries(
+    LGRP
   )
-    .map(([k, v]) => `<option value="${k}">${v}</option>`)
+    .map(([gk, [lbl, L]]) => {
+      const o = L.filter(x => types.includes(gk + ':' + x));
+      return o.length
+        ? `<optgroup label="${lbl}">${o.map(x => `<option value="${gk}:${x}" ${cur === gk + ':' + x ? 'selected' : ''}>${LINK[x]}</option>`).join('')}</optgroup>`
+        : '';
+    })
     .join(
       ''
-    )}</select><select data-act="link" aria-label="Argumento"><option value="">Escolher argumento...</option>${opts}</select></div>
+    )}</select><select data-act="link" aria-label="Argumento"><option value="">Escolher argumento...</option>${valid(
+    g,
+    t
+  )
+    .map(x => `<option value="${t}:${x.id}">${code(x)} · ${esc(x.title).slice(0, 40)}</option>`)
+    .join('')}</select></div>`;
+}
+function detHTML(a) {
+  const ax = S.axes.length
+    ? `<label>Clashes, métricas e caracterizações</label>${S.axes
+        .map(x => {
+          const on = a.ax[x.id],
+            ty = axType(a, x.id);
+          return `<div class="axrow ${on ? 'on' : ''}"><span class="small">${AXI[x.kind]} ${esc(x.title) || '?'}</span><span class="chips">${Object.entries(
+            AXT
+          )
+            .map(
+              ([k, v]) =>
+                `<button class="chip ${on && ty === k ? 'on' : ''}" data-act="argaxt" data-k="${x.id}" data-v="${k}" title="${v}">${AXTI[k] ? AXTI[k] + ' ' : ''}${v}</button>`
+            )
+            .join(
+              ''
+            )}${on ? `<button class="chip" data-act="argax" data-v="${x.id}" title="Força">${dots(on)}</button>` : ''}</span></div>`;
+        })
+        .join('')}`
+    : '';
+  return `<div class="det"><label>Por que se sustenta (mecanismo)</label><textarea data-f="why" rows="2">${esc(a.why)}</textarea><label>Impacto</label><input data-f="imp" value="${esc(a.imp)}">
+<label>Ligar a outro argumento <span class="muted">(ou arraste o código ${code(a)})</span></label>${linkPicker(a)}
 ${ax}${
     a.links.some(l => l.t === 'v')
       ? `<label>Força da verticalização</label>${a.links
@@ -107,10 +152,13 @@ ${ax}${
       : ''
   }
 <label>Ao fim do debate, este argumento</label><div class="chips">${Object.entries(RES)
-    .map(([k, v]) => `<button class="chip ${a.res === k ? 'on' : ''}" data-act="res" data-v="${k}">${v}</button>`)
+    .map(
+      ([k, v]) =>
+        `<button class="chip ${a.res === k ? 'on' : ''}" data-act="res" data-v="${k}" data-key="${{ pe: 'S', mi: 'M', cai: 'C' }[k]}">${v}</button>`
+    )
     .join(
       ''
-    )}</div><label>Nota</label><input data-f="note" value="${esc(a.note)}"><div class="row"><button class="sm" data-act="clashFrom">Criar confronto</button><button class="sm" data-act="del">Apagar</button></div></div>`;
+    )}</div><label>Nota</label><input data-f="note" value="${esc(a.note)}"><div class="row"><button class="sm" data-act="clashFrom">Criar confronto</button><button class="sm" data-act="del" data-key="Del">Apagar</button></div></div>`;
 }
 function renderSpeeches() {
   const cur = SP[S.cur].k;
@@ -120,14 +168,14 @@ function renderSpeeches() {
 ${SP.filter(x => x.t === t)
   .map(
     x =>
-      `<div class="speech ${x.k === cur ? 'live' : ''}" data-sp="${x.k}"><div class="sh"><span><span class="role">${x.k}</span> <span class="small muted">${esc(S.teams[t].sp[x.i] || SPN[x.k])}</span></span><button class="sm" data-act="setcur">${x.k === cur ? 'Falando' : 'Marcar'}</button></div><form class="add" data-sp="${x.k}"><input placeholder="Nova ideia, Enter" aria-label="Nova ideia em ${x.k}"><button class="sm">+</button></form>${S.args
+      `<div class="speech ${x.k === cur ? 'live' : ''}" data-sp="${x.k}"><div class="sh"><span><span class="role">${x.k}</span> <span class="small muted">${esc(S.teams[t].sp[x.i] || SPN[x.k])}</span></span><button class="sm" data-act="setcur">${x.k === cur ? 'Falando' : 'Marcar'}</button></div><form class="add" data-sp="${x.k}" data-key="N"><input placeholder="Nova ideia, Enter" aria-label="Nova ideia em ${x.k}"><button class="sm">+</button></form>${poiLine(x.k)}${S.args
         .filter(a => a.sp === x.k)
         .map(argCard)
         .join('')}</div>`
   )
   .join('')}</div>`;
   }).join('');
-  document.querySelectorAll('.arg .t').forEach(fit);
+  fitAll([...document.querySelectorAll('.arg .t')]);
   $('#mobTeams').innerHTML = TEAMS.map(
     t => `<button class="pick T${t} ${mobTeam === t ? 'on' : ''}" data-act="mob" data-v="${t}">${t}</button>`
   ).join('');
@@ -142,6 +190,7 @@ ${SP.filter(x => x.t === t)
 }
 function renderFlow() {
   if (!S) return;
+  dropInc();
   if (SEL && !argById(SEL)) SEL = null;
   renderAxesBar();
   renderLensBar();
@@ -219,11 +268,16 @@ document.addEventListener('click', e => {
   e.preventDefault();
   selectArg(g.dataset.go, true);
 });
+/* força: 1 → 2 → 3 → 1 (desligar é tocar de novo no tipo ativo) */
 ACTS.argax = (b, a) => {
   const k = b.dataset.v;
-  const n = ((a.ax[k] || 0) + 1) % 4;
-  if (n) a.ax[k] = n;
-  else delete a.ax[k];
+  setAx(a, k, a.ax[k] ? (a.ax[k] % 3) + 1 : 2, axType(a, k));
+};
+ACTS.argaxt = (b, a) => {
+  const k = b.dataset.k,
+    t = b.dataset.v;
+  if (a.ax[k] && axType(a, k) === t) setAx(a, k, 0);
+  else setAx(a, k, a.ax[k] || 2, t);
 };
 ACTS.vforce = (b, a) => {
   const l = a.links.find(x => x.id === b.dataset.k && x.t === 'v');

@@ -240,6 +240,7 @@ function renderOA(R) {
 }
 function renderDerived() {
   if (route.v !== 'delib') return;
+  renderPendBox();
   renderMyRank();
   renderAdvBox();
   const R = isOut() ? renderPanelOut() : renderPanelPrelim();

@@ -33,10 +33,10 @@ function setLens(l) {
 function renderLensBar() {
   $('#lensBar').innerHTML = `<div class="lensbar"><div class="seg" role="tablist">${LENSES.map(
     ([k, v]) =>
-      `<button role="tab" aria-selected="${LENS === k}" class="${LENS === k ? 'on' : ''}" data-act="lens" data-v="${k}">${v}</button>`
+      `<button role="tab" aria-selected="${LENS === k}" class="${LENS === k ? 'on' : ''}" data-act="lens" data-v="${k}" data-key="V">${v}</button>`
   ).join(
     ''
-  )}</div><span class="grow"></span><button class="sm ${FOCUS ? 'pri' : ''}" data-act="focus" aria-pressed="${FOCUS}" title="Atalho: F">◎ Foco</button><button class="sm" data-act="keys" title="Atalhos (?)">⌨ Atalhos</button></div>`;
+  )}</div><span class="grow"></span>${(n => (n ? `<button class="sm pendbtn" data-act="pend" title="Pendências antes de votar">⚠ ${n}</button>` : ''))(pendings().length)}<button class="sm ${FOCUS ? 'pri' : ''}" data-act="focus" data-key="F" aria-pressed="${FOCUS}" title="Atalho: F">◎ Foco</button><button class="sm" data-act="keys" data-key="?" title="Atalhos (?)">⌨ Atalhos</button></div>`;
 }
 /* conjunto de argumentos "em foco" */
 function focusSet() {
@@ -68,6 +68,7 @@ function focusSet() {
 }
 function applyFocus() {
   if (!S) return;
+  updateCompact();
   const set = focusSet();
   const dim = !!set && (FOCUS || !!AXF);
   for (const box of ['#flow', '#lensIdea']) {
@@ -172,3 +173,40 @@ function renderIdeas() {
     ? `<p class="hint">Cada ideia de partida e tudo o que veio depois dela. Toque num item para destacar; toque no código para ir até o cartão.</p><div class="threads">${html}</div>`
     : '<p class="muted">Nenhuma ideia anotada ainda. Anote em "Por fala".</p>';
 }
+
+/* ---------- barra de cima compacta ----------
+ * Na ficha, o cabeçalho encolhe para uma linha quando você está digitando no flow ou rolou a página;
+ * no modo foco fica mínimo (sem preparação, dicas nem campo de novo eixo) para sobrar espaço.
+ */
+let typingFlow = false;
+let compactHold = 0; // até quando manter compacto depois de sair de um campo (evita a tela pular)
+function updateCompact() {
+  const inF = route.v === 'ficha' && !!S;
+  document.body.classList.toggle('focusmode', inF && FOCUS);
+  // histerese: encolhe depois de 200 px e só volta perto do topo
+  const was = document.body.classList.contains('compact');
+  const scrolled = was ? scrollY > 12 : scrollY > 200;
+  const want = inF && (FOCUS || typingFlow || scrolled);
+  if (!want && inF && (DRAG || document.querySelector('.pop') || Date.now() < compactHold)) return;
+  if (want === was) return;
+  const hdr = $('#hdr');
+  const h0 = hdr.offsetHeight;
+  document.body.classList.toggle('compact', want);
+  // Quando encolhe só por rolagem, um espaço do tamanho da diferença fica abaixo da barra:
+  // o conteúdo não se mexe (sem "pulo") e a área visível ganha o espaço do mesmo jeito.
+  // No foco e digitando, o espaço é liberado de verdade.
+  hdr.style.marginBottom = '';
+  if (want && !FOCUS && !typingFlow) hdr.style.marginBottom = Math.max(0, h0 - hdr.offsetHeight) + 'px';
+}
+addEventListener('scroll', updateCompact, { passive: true });
+document.addEventListener('focusin', e => {
+  typingFlow = !!e.target.closest('#flow input, #flow textarea, #lensAxis textarea, .axadd input');
+  updateCompact();
+});
+document.addEventListener('focusout', () => {
+  if (!typingFlow) return;
+  typingFlow = false;
+  compactHold = Date.now() + 1500;
+  setTimeout(updateCompact, 1600);
+});
+addEventListener('hashchange', () => setTimeout(updateCompact, 0));
