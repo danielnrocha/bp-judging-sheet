@@ -53,6 +53,19 @@ Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Doc
 <script>window.BP_CONFIG={supabaseUrl:'https://YOUR-PROJECT.supabase.co',supabaseKey:'sb_publishable_...'}</script>
 ```
 
+## Reliability
+
+Every keystroke is saved on the device right away, so a closed tab, a reload, a dead battery or a laptop going to sleep does not lose the debate.
+
+- **Two copies on the device.** Notes go to localStorage at once and to an IndexedDB mirror written with durable commits about 100 ms later. If the browser is killed before localStorage reaches the disk (a power cut), the app restores from the mirror on the next open. In tests that kill the browser mid-debate, everything typed more than about 0.1 s before the cut survived.
+- **Half-typed ideas** in the "new idea" boxes are kept as drafts until you press Enter.
+- **Works offline.** After the first visit a service worker keeps the app available without internet. In local mode nothing needs the network.
+- **Supabase mode without internet.** Edits stay on the device, the status says so, and they sync automatically when the connection returns. A debate can be reopened offline from the copy on the device.
+- **Several tabs** can be open at once without overwriting each other.
+- **Full storage** is reported loudly as NOT SAVED, never as saved.
+
+What the app cannot protect against in local mode: clearing the browser's data, private/incognito windows, losing the device, and Safari erasing site data after 7 days without opening the app (installing it to the home screen avoids this). Use **Export all (JSON)** as a backup; the app reminds you after 7 days without one. Supabase mode keeps a copy off the device.
+
 ## Languages
 
 Portuguese (pt-BR) is the source language and the default. English and Spanish come from a translation table (`DICT`) and a few pattern rules (`RULES`) in the language script near the top of `index.html`, applied to the interface as it renders. To fix a translation, edit its entry in `DICT`. To add a language, add a column to each `DICT` entry, a branch to the rules and an option to the selector. Your notes are never translated.
