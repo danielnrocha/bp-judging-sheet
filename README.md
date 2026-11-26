@@ -11,7 +11,7 @@ A flow sheet for judging British Parliamentary (BP) debates: take notes, deliber
 - Tournaments with prelims, octos, quarters, semis and final.
 - Queries and export to JSON and CSV.
 
-It is a single `index.html` file: no build step and nothing to install. The interface is currently in Portuguese.
+It is a single `index.html` file: no build step and nothing to install. The interface is available in Portuguese (default), English and Spanish; switch with the language selector in the header.
 
 ## How to use
 
@@ -49,6 +49,10 @@ Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Doc
 ```html
 <script>window.BP_CONFIG={supabaseUrl:'https://YOUR-PROJECT.supabase.co',supabaseKey:'sb_publishable_...'}</script>
 ```
+
+## Languages
+
+Portuguese (pt-BR) is the source language and the default. English and Spanish come from a translation table (`DICT`) and a few pattern rules (`RULES`) in the language script near the top of `index.html`, applied to the interface as it renders. To fix a translation, edit its entry in `DICT`. To add a language, add a column to each `DICT` entry, a branch to the rules and an option to the selector. Your notes are never translated.
 
 ## Privacy
 
