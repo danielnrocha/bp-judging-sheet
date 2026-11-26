@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+__pycache__/
+.env
+.env.*
+*.local.json
+exports/
+ficha-bp-*.json
+debates-*.csv
+argumentos-*.csv
+speaks-*.csv
