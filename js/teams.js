@@ -43,7 +43,8 @@ function teamModal(t) {
               pr.filter(p => p.sp === x.k && !p.no).length +
               ' aceitos, ' +
               pr.filter(p => p.sp === x.k && p.no).length +
-              ' recusados'
+              ' recusados' +
+              ({ recusou: ' (recusou todos)', ninguem: ' (ninguém ofereceu)' }[poiStatus(x.k)] || '')
           )
           .join(' · ')}</div>`
       : '';

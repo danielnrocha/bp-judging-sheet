@@ -168,17 +168,49 @@ document.addEventListener(
   true
 );
 /* linha de POIs dentro de cada discurso */
+/* Situação de POIs de um discurso que já terminou:
+ *  ok      aceitou pelo menos um;
+ *  recusou ofereceram e ele não aceitou nenhum (pesa contra o orador);
+ *  ninguem o juiz marcou que ninguém ofereceu (não pesa);
+ *  vazio   nada registrado (vira pendência: ofereceram?). Discurso atual ou futuro: ''. */
+function poiStatus(sp) {
+  if (spIdx(sp) >= S.cur) return '';
+  const L = poiOf(sp);
+  if (L.some(p => !p.no)) return 'ok';
+  if (L.length) return 'recusou';
+  return (S.poiNone || []).includes(sp) ? 'ninguem' : 'vazio';
+}
 function poiLine(sp) {
   const L = poiOf(sp);
-  const past = SP.findIndex(x => x.k === sp) < S.cur;
-  const acc = L.filter(p => !p.no).length;
-  const warn = past && !acc ? '<span class="badge w">nenhum POI aceito</span>' : '';
-  if (!L.length && !warn) return '';
-  return `<div class="pois">${warn}${L.map(
+  const st = poiStatus(sp);
+  const flag =
+    st === 'recusou'
+      ? '<span class="badge b">recusou todos os POIs</span>'
+      : st === 'ninguem'
+        ? `<button class="badge linkbtn" data-act="poinone" data-v="${sp}" title="Desfazer">ninguém ofereceu POI</button>`
+        : st === 'vazio'
+          ? `<span class="badge w">sem POI registrado</span><button class="chip" data-act="poinone" data-v="${sp}">ninguém ofereceu</button>`
+          : '';
+  if (!L.length && !flag) return '';
+  return `<div class="pois">${flag}${L.map(
     p =>
       `<button class="poichip T${spOf(p.by).t} ${p.no ? 'no' : ''}" data-act="poi" data-sp="${sp}" data-v="${p.id}" title="${esc(p.q)}${p.a ? ' → ' + esc(p.a) : ''}"><span class="tc">${p.by}</span> ${p.no ? 'recusado' : fmt(p.at)}${p.ev === 'poi' ? ' ▲' : p.ev === 'resp' ? ' ▼' : ''}${p.q ? ' · ' + esc(p.q).slice(0, 32) : ''}</button>`
   ).join('')}</div>`;
 }
+/* marca (ou desmarca) que ninguém ofereceu POI neste discurso */
+ACTS.poinone = b => {
+  const k = b.dataset.v;
+  S.poiNone = S.poiNone || [];
+  const i = S.poiNone.indexOf(k);
+  if (i >= 0) S.poiNone.splice(i, 1);
+  else S.poiNone.push(k);
+  if ($('#modal').classList.contains('on') && $('#mbox .pend')) {
+    save();
+    pendModal();
+    modal.onclose = renderFlow;
+    return false;
+  }
+};
 $('#poiBtn').onclick = () => {
   if (route.v === 'ficha') poiModal();
 };

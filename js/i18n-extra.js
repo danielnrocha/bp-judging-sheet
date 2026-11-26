@@ -695,3 +695,46 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
     ...R(pick)
   ];
 }
+
+/* rodada 4: POI recusado x ninguém ofereceu */
+Object.assign(window.BP_I18N_EXTRA.dict, {
+  'recusou todos os POIs': ['declined every POI', 'rechazó todos los POIs'],
+  'sem POI registrado': ['no POI logged', 'ningún POI registrado'],
+  'ninguém ofereceu POI': ['nobody offered a POI', 'nadie ofreció POI'],
+  'ninguém ofereceu': ['nobody offered', 'nadie ofreció'],
+  Desfazer: ['Undo', 'Deshacer']
+});
+{
+  const R = window.BP_I18N_EXTRA.rules;
+  window.BP_I18N_EXTRA.rules = pick => [
+    [
+      /^(\S+) recusou todos os POIs oferecidos: pesa no engajamento\.$/,
+      m =>
+        pick(
+          m[1] + ' declined every POI offered: counts against engagement.',
+          m[1] + ' rechazó todos los POIs ofrecidos: pesa en el involucramiento.'
+        )
+    ],
+    [
+      /^(\S+): nenhum POI registrado\. Ofereceram\?$/,
+      m => pick(m[1] + ': no POI logged. Were any offered?', m[1] + ': ningún POI registrado. ¿Le ofrecieron?')
+    ],
+    [
+      /^(\d+) aceitos, (\d+) recusados \((recusou todos|ninguém ofereceu)\)$/,
+      m =>
+        m[1] +
+        pick(' taken, ', ' aceptados, ') +
+        m[2] +
+        pick(' declined', ' rechazados') +
+        ' (' +
+        pick(
+          ...{
+            'recusou todos': ['declined all', 'rechazó todos'],
+            'ninguém ofereceu': ['nobody offered', 'nadie ofreció']
+          }[m[3]]
+        ) +
+        ')'
+    ],
+    ...R(pick)
+  ];
+}

@@ -135,7 +135,8 @@ function blankS(stage) {
     cur: 0,
     axes: [],
     weigh: '',
-    pois: []
+    pois: [],
+    poiNone: []
   };
 }
 const cleanResult = r => {
@@ -239,6 +240,8 @@ function migrate(s) {
         ev: ['poi', 'resp', 'neu'].includes(p.ev) ? p.ev : '',
         no: !!p.no
       }));
+    // discursos em que ninguém ofereceu POI (não pesa contra o orador)
+    s.poiNone = (Array.isArray(s.poiNone) ? s.poiNone : []).filter((k, i, L) => SPK.includes(k) && L.indexOf(k) === i);
   }
   if (!Array.isArray(s.clashes)) s.clashes = [];
   s.clashes = s.clashes.filter(

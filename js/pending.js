@@ -26,10 +26,15 @@ function pendings() {
   for (const c of S.clashes)
     if (!c.win && argById(c.a) && argById(c.b))
       add(`Confronto ${go(argById(c.a))} x ${go(argById(c.b))}: quem levou?`, null, 'clash');
-  const last = S.cur;
-  SP.forEach((x, i) => {
-    if (i < last && !(S.pois || []).some(p => p.sp === x.k && !p.no))
-      add(`${x.k} não aceitou POI (pesa no engajamento).`, null, 'poi');
+  SP.forEach(x => {
+    const st = poiStatus(x.k);
+    if (st === 'recusou') add(`${x.k} recusou todos os POIs oferecidos: pesa no engajamento.`, null, 'poi');
+    else if (st === 'vazio')
+      add(
+        `${x.k}: nenhum POI registrado. Ofereceram? <button class="chip" data-act="poinone" data-v="${x.k}">ninguém ofereceu</button>`,
+        null,
+        'poi'
+      );
   });
   PAIRS.forEach(([a, b]) => {
     const p = S.my[pk(a, b)];
