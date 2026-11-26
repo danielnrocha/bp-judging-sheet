@@ -5,14 +5,21 @@
 A flow sheet for judging British Parliamentary (BP) debates: take notes, deliberate and keep a history of every round, following the WUDC adjudication manual. The app itself is titled "Ficha BP" (Portuguese for "BP sheet").
 
 - Flow by speech: claims, mechanism, impact, quality, and whether each argument stood.
-- Clashes between arguments and who won each one.
+- Typed links between arguments: responds, flips, complements (same team) and deepens ("verticaliza", closing over its opening, with strength). Drag an argument's code onto another argument to link it.
+- Clashes and metrics: name the central clashes and weighing metrics of the debate, link arguments to them with a strength, set relevance, who introduced and who won each one, and write the weighing between them.
+- Three views of the same debate: by speech, by idea (each idea with everything that came after it) and by metric (how each team engaged each clash or metric).
+- Focus mode that dims everything not related to the selected argument (or to the current speech).
+- Click a team's header to see everything about it: names, numbers, arguments per speech, clashes and metrics, and your comparisons.
+- Direct clashes between arguments and who won each one.
 - Deliberation with all 6 pairwise comparisons, wing votes, splits resolved per comparison and Ranked Pairs for cycles.
 - Speaker points checked against the ranking.
 - Tournaments with prelims, octos, quarters, semis and final.
 - Practices, separate from tournaments: internal to your debating society (SD), joint with another debating society, or external.
+- Adjustable timer (speech length, protected time, grace, deliberation) and keyboard shortcuts (press `?` in a debate).
+- Tabbycat: paste your private URL and the sheet pulls round, motion, info slide, teams, speakers and panel.
 - Queries and export to JSON and CSV.
 
-It is a single `index.html` file: no build step and nothing to install. The interface is available in Portuguese (default), English and Spanish; switch with the language selector in the header.
+It is a static site: `index.html`, one stylesheet and a few plain scripts. No build step and nothing to install (see [Code layout](#code-layout)). The interface is available in Portuguese (default), English and Spanish; switch with the language selector in the header.
 
 ## How to use
 
@@ -53,6 +60,23 @@ Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Doc
 <script>window.BP_CONFIG={supabaseUrl:'https://YOUR-PROJECT.supabase.co',supabaseKey:'sb_publishable_...'}</script>
 ```
 
+## Taking notes fast
+
+- Type an idea and press Enter. Prefixes link it as you type: `>LO1 text` responds to LO1, `~LO1 text` flips it, `+PM1 text` complements PM1, `^PM1 text` deepens it (`^3PM1` strong, `^1PM1` weak). `#2` links it to the 2nd clash or metric. Ending with ` !` marks it strong, ` ?` weak.
+- Drag the code of an argument (e.g. `LO1`) onto another argument to link them, or onto a clash or metric in the bar above the flow.
+- With an argument selected: `1` `2` `3` quality, `P` `M` `C` standing / mitigated / fell, `E` details, `Del` delete. Elsewhere: `Space` timer, `N` new idea, `]` `[` next / previous speech, `+` `-` adjust 10 s, `F` focus, `V` switch view, `D` deliberation, `?` all shortcuts.
+- Click the clock to change speech length (7, 5, 4, 3 minutes or any value), protected time and deliberation time.
+
+## Tabbycat
+
+In **Preparação**, paste your Tabbycat private URL (`https://<site>/<tournament>/privateurls/<key>/`) and press **Puxar** (Pull). The app uses Tabbycat's public API (`/api/v1`, which allows cross-origin requests):
+
+1. `/me` with your private key says who you are;
+2. rounds, the draw, teams and adjudicators come from the public endpoints, so they depend on the tournament having released the draw and the participants list;
+3. the debate is the one with you on the panel, and your role (chair, wing, trainee) is set from it.
+
+If the draw is not public yet, the app fills your name and offers the tournament's teams, speakers and adjudicators as suggestions in the fields, or lets you pick another round and room. A public tournament link also works (you then pick the room). The private URL stays in your browser: it is not saved in the debate, sent to Supabase or exported.
+
 ## Reliability
 
 Every keystroke is saved on the device right away, so a closed tab, a reload, a dead battery or a laptop going to sleep does not lose the debate.
@@ -68,22 +92,54 @@ What the app cannot protect against in local mode: clearing the browser's data, 
 
 ## Languages
 
-Portuguese (pt-BR) is the source language and the default. English and Spanish come from a translation table (`DICT`) and a few pattern rules (`RULES`) in the language script near the top of `index.html`, applied to the interface as it renders. To fix a translation, edit its entry in `DICT`. To add a language, add a column to each `DICT` entry, a branch to the rules and an option to the selector. Your notes are never translated.
+Portuguese (pt-BR) is the source language and the default. English and Spanish come from a translation table (`DICT`) and a few pattern rules (`RULES`) in `js/i18n.js` (plus `js/i18n-extra.js` for the newer features), applied to the interface as it renders. To fix a translation, edit its entry in `DICT`. To add a language, add a column to each `DICT` entry, a branch to the rules and an option to the selector. Your notes are never translated.
 
 ## Privacy
 
-The app makes no third-party requests: fonts and the Supabase client library are served from this repository, and the Supabase library is only loaded if you connect a Supabase project.
+The app makes no third-party requests: fonts and the Supabase client library are served from this repository, and the Supabase library is only loaded if you connect a Supabase project. The only other request is to the Tabbycat site whose link you paste, and only when you press Pull.
 
 
 This repository contains no debate data. Notes live in the user's browser or in a Supabase project the user sets up. Adjudication notes are often confidential: do not export or share them without the consent of the teams and the tournament.
+
+## Code layout
+
+No build step: plain scripts that share globals, loaded in order by `index.html`.
+
+| File | What it does |
+| --- | --- |
+| `css/app.css` | All styles |
+| `js/theme.js` | Light/dark theme (runs in `<head>`, before paint) |
+| `js/i18n-extra.js`, `js/i18n.js` | English and Spanish translation of the interface |
+| `js/store.js` | IndexedDB mirror, local database client, Supabase client |
+| `js/model.js` | Constants, the debate data shape, `migrate` (sanitizes anything loaded) |
+| `js/state.js` | Current debate state and helpers (links, status, judges) |
+| `js/save.js` | Saving and syncing |
+| `js/results.js` | Pairwise results, Ranked Pairs, out-rounds, speaker points |
+| `js/flow.js` | Argument cards, speech view, setup, direct clashes |
+| `js/lenses.js` | View switcher, by-idea view, focus mode and selection |
+| `js/axes.js` | Clashes and metrics: bar, editor, by-metric view |
+| `js/drag.js` | Drag to link (pointer events: mouse, pen and touch) |
+| `js/teams.js` | Team modal |
+| `js/delib.js` | Deliberation and oral adjudication script |
+| `js/home.js`, `js/consultas.js`, `js/router.js` | Tournaments, queries and exports, routing |
+| `js/ui.js`, `js/events.js` | Toast, modal and the event handlers |
+| `js/timer.js`, `js/shortcuts.js` | Timer and keyboard shortcuts |
+| `js/tabby.js` | Tabbycat import |
+| `js/boot.js` | Sign-in, storage modal, import, start-up |
+
+Feature modules register their buttons in `ACTS` (`data-act="name"`), so `events.js` does not need to know about them. The service worker (`sw.js`) lists every file to cache: add new files there too.
 
 ## Tests
 
 ```bash
 pip install playwright && playwright install chromium
-python tests/test_local.py   # local mode, export and import
-python tests/test_flow.py    # full flow against a mocked Supabase
+python tests/serve.py &        # static server for the tests that need http://localhost:8765
+python tests/test_local.py     # local mode, export and import
+python tests/test_flow.py      # full flow against a mocked Supabase
+python tests/test_v2.py        # links, clashes and metrics, views, focus, timer, shortcuts, Tabbycat (mocked)
 ```
+
+Use `tests/serve.py` rather than `python -m http.server`: the stock server refuses some of the app's parallel requests on Windows.
 
 ## License
 

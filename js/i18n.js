@@ -626,6 +626,7 @@
         'Así el navegador puede no guardar tus notas de forma segura y la app no funciona sin internet. Usa la dirección publicada de la app.'
       ]
   };
+  Object.assign(DICT, (window.BP_I18N_EXTRA && window.BP_I18N_EXTRA.dict) || {});
   const ord = n =>
     L === 'en' ? n + ['th', 'st', 'nd', 'rd'][n % 10 > 3 || Math.floor((n % 100) / 10) === 1 ? 0 : n % 10] : n + 'º';
   const W = {
@@ -772,6 +773,7 @@
     [/^- (\S+) sobre (\S+)(.*)$/, m => '- ' + m[1] + pick(' over ', ' sobre ') + m[2] + m[3]]
   ];
   const cache = new Map();
+  if (window.BP_I18N_EXTRA && window.BP_I18N_EXTRA.rules) RULES.unshift(...window.BP_I18N_EXTRA.rules(pick));
   function core(s) {
     const d = DICT[s];
     if (d) return d[L === 'en' ? 0 : 1];

@@ -1,6 +1,6 @@
 """Resilience checks for local mode: reloads, multi-tab, drafts, IndexedDB restore, full storage, offline reload.
 Needs the app served over http://localhost (service workers need a secure context):
-    python -m http.server 8765   (from the repo root)   then   python tests/test_resilience.py
+    python tests/serve.py   then   python tests/test_resilience.py
 """
 from playwright.sync_api import sync_playwright
 URL='http://localhost:8765/index.html'

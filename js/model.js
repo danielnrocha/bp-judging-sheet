@@ -54,6 +54,14 @@ const HINT = {
 const KIND = { c: 'Construtivo', r: 'Resposta', x: 'Extensão', p: 'Pesagem', i: 'POI' };
 const QUAL = { f: 'Forte', m: 'Ok', w: 'Fraco' };
 const RES = { pe: 'De pé', mi: 'Mitigado', cai: 'Caiu' };
+/* Ligações entre argumentos. r e f atacam (lado oposto); c e v somam (mesmo lado). */
+const LINK = { r: 'Responde', f: 'Flipa', c: 'Complementa', v: 'Verticaliza' };
+const LINKV = { r: 'responde', f: 'flipa', c: 'complementa', v: 'verticaliza' };
+const LINKIN = { r: 'Respondido por', f: 'Flipado por', c: 'Complementado por', v: 'Verticalizado por' };
+const FORCE = { 1: 'Fraca', 2: 'Média', 3: 'Forte' };
+/* Eixos do debate: clashes (choques centrais) e métricas (critérios de pesagem). */
+const AXK = { c: 'Clash', m: 'Métrica' };
+const REL = { 1: 'Baixa', 2: 'Média', 3: 'Alta' };
 const CMP = { s: 'Comparado pelos debatedores', p: 'Comparado em parte', n: 'Não comparado, eu comparo' };
 const ROLE = { chair: 'Chair', wing: 'Wing', trainee: 'Trainee (não vota)', off: 'Fora do painel' };
 const SCALE = [
@@ -106,7 +114,9 @@ function blankS(stage) {
     tie: [],
     speaks: { f: {} },
     speaksOn: (stage || 'preliminar') === 'preliminar',
-    cur: 0
+    cur: 0,
+    axes: [],
+    weigh: ''
   };
 }
 const cleanResult = r => {
@@ -145,8 +155,47 @@ function migrate(s) {
       kind: KIND[a.kind] ? a.kind : 'c',
       res: RES[a.res] ? a.res : '',
       to: Array.isArray(a.to) ? a.to.map(String) : [],
+      links: Array.isArray(a.links)
+        ? a.links
+            .filter(l => l && typeof l === 'object' && LINK[l.t])
+            .map(l => ({ id: String(l.id), t: l.t, ...(l.t === 'v' ? { s: FORCE[l.s] ? +l.s : 2 } : {}) }))
+        : (Array.isArray(a.to) ? a.to : []).map(id => ({ id: String(id), t: 'r' })),
+      ax:
+        a.ax && typeof a.ax === 'object'
+          ? Object.fromEntries(
+              Object.entries(a.ax)
+                .filter(([, v]) => FORCE[v])
+                .map(([k, v]) => [String(k), +v])
+            )
+          : {},
       open: !!a.open
     }));
+  {
+    const ids = new Set(s.args.map(a => a.id));
+    s.args.forEach(a => {
+      a.links = a.links.filter(l => l.id !== a.id && ids.has(l.id));
+      a.to = a.links.filter(l => l.t === 'r' || l.t === 'f').map(l => l.id);
+    });
+  }
+  s.axes = (Array.isArray(s.axes) ? s.axes : [])
+    .filter(x => x && typeof x === 'object')
+    .map(x => ({
+      id: String(x.id || uid()),
+      title: String(x.title ?? ''),
+      kind: AXK[x.kind] ? x.kind : 'c',
+      rel: REL[x.rel] ? +x.rel : 2,
+      by: TEAMS.includes(x.by) ? x.by : '',
+      win: TEAMS.includes(x.win) ? x.win : '',
+      note: String(x.note ?? '')
+    }));
+  s.weigh = String(s.weigh ?? '');
+  {
+    const ax = new Set(s.axes.map(x => x.id));
+    s.args.forEach(a => {
+      for (const k of Object.keys(a.ax)) if (!ax.has(k)) delete a.ax[k];
+    });
+  }
+  delete s.tab;
   if (!Array.isArray(s.clashes)) s.clashes = [];
   s.clashes = s.clashes.filter(
     c => c && typeof c === 'object' && s.args.some(a => a.id === c.a) && s.args.some(a => a.id === c.b)

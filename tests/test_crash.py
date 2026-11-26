@@ -1,5 +1,5 @@
 """Simulates a power cut: SIGKILLs the browser at several delays after typing and checks what survived.
-Needs: python -m http.server 8765 (repo root) and pip install psutil.
+Needs: python tests/serve.py (repo root) and pip install psutil.
 """
 import os,time,shutil,psutil,sys
 from playwright.sync_api import sync_playwright

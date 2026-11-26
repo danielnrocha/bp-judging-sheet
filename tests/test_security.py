@@ -1,4 +1,4 @@
-"""Adversarial checks. Serve the repo first: python -m http.server 8765 (from the repo root)."""
+"""Adversarial checks. Serve the repo first: python tests/serve.py (from the repo root)."""
 import json,sys
 from playwright.sync_api import sync_playwright
 P='http://localhost:8765/index.html'
