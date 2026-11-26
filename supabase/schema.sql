@@ -47,7 +47,9 @@ alter table bp.debates enable row level security;
 create policy own_t on bp.tournaments for all to authenticated
   using (owner = (select auth.uid())) with check (owner = (select auth.uid()));
 create policy own_d on bp.debates for all to authenticated
-  using (owner = (select auth.uid())) with check (owner = (select auth.uid()));
+  using (owner = (select auth.uid()))
+  with check (owner = (select auth.uid()) and (tournament_id is null or exists (
+    select 1 from bp.tournaments t where t.id = tournament_id and t.owner = (select auth.uid()))));
 grant select, insert, update, delete on bp.tournaments, bp.debates to authenticated;
 
 -- API surface: security_invoker views in the public schema (table RLS applies)

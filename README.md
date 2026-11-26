@@ -18,7 +18,7 @@ It is a single `index.html` file: no build step and nothing to install. The inte
 
 ### 1. Just open it (simplest)
 
-Open the project's GitHub Pages link, or download `index.html` and open it in your browser.
+Open the project's GitHub Pages link. Opening `index.html` straight from your disk (file://) is not recommended: browsers do not always keep data reliably that way and the app cannot work offline.
 
 Your data is saved **only in your browser** (localStorage). There is no account and no server. Use **Consultas > Exportar tudo (JSON)** now and then as a backup. To move your data to another device, export on one and use **Importar JSON** on the other.
 
@@ -41,13 +41,13 @@ Google sign-in is optional and only works if you enable the Google provider in y
 
 To bring over notes you took in local mode, export the JSON before connecting and use **Importar JSON** afterwards.
 
-Already set up with an older `schema.sql`? Run [`supabase/migrations/002_trainings.sql`](supabase/migrations/002_trainings.sql) once to enable practices.
+Already set up with an older `schema.sql`? Run the files in [`supabase/migrations`](supabase/migrations) that came after your version, in order (002 enables practices, 003 tightens access rules).
 
 Each user only sees their own tournaments and debates (Row Level Security). For analysis, the schema creates the views `bp.v_debates`, `bp.v_arguments` and `bp.v_speaks`, which you can query in the SQL Editor.
 
 ### 3. Host your own copy
 
-Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Docker is not needed, since the app is a static HTML file. To make your instance point to your Supabase by default, add this before the main script:
+Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Docker is not needed, since the app is a static HTML file. To make your instance point to your Supabase by default, add this near the top of `<body>`, before the script that loads `vendor/supabase`:
 
 ```html
 <script>window.BP_CONFIG={supabaseUrl:'https://YOUR-PROJECT.supabase.co',supabaseKey:'sb_publishable_...'}</script>
@@ -71,6 +71,9 @@ What the app cannot protect against in local mode: clearing the browser's data, 
 Portuguese (pt-BR) is the source language and the default. English and Spanish come from a translation table (`DICT`) and a few pattern rules (`RULES`) in the language script near the top of `index.html`, applied to the interface as it renders. To fix a translation, edit its entry in `DICT`. To add a language, add a column to each `DICT` entry, a branch to the rules and an option to the selector. Your notes are never translated.
 
 ## Privacy
+
+The app makes no third-party requests: fonts and the Supabase client library are served from this repository, and the Supabase library is only loaded if you connect a Supabase project.
+
 
 This repository contains no debate data. Notes live in the user's browser or in a Supabase project the user sets up. Adjudication notes are often confidential: do not export or share them without the consent of the teams and the tournament.
 
