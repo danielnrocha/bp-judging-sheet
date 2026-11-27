@@ -36,7 +36,7 @@ function pdfAxes() {
   return `<h2>${pdfT('Clashes e métricas')}</h2><ul class="pax">${ax
     .map(
       x =>
-        `<li><b>${AXI[x.kind]} ${pdfT(AXK[x.kind])}:</b> ${esc(x.title)} <span class="muted">(${pdfT('relevância')} ${pdfT(REL[x.rel]).toLowerCase()})</span>${x.win ? ' · ' + pdfT('levou') + ' ' + pdfTeam(x.win) : ''}${x.note.trim() ? `<div class="pnote">${esc(x.note)}</div>` : ''}${pdfAxArgs(x)}</li>`
+        `<li><b>${AXI[x.kind]} ${pdfT(AXK[x.kind])}:</b> ${esc(x.title)} <span class="muted">(${pdfT('relevância ' + REL[x.rel].toLowerCase())})</span>${x.win ? ' · ' + pdfT('levou') + ' ' + pdfTeam(x.win) : ''}${x.note.trim() ? `<div class="pnote">${esc(x.note)}</div>` : ''}${pdfAxArgs(x)}</li>`
     )
     .join('')}</ul>${S.weigh.trim() ? `<p><b>${pdfT('Sopesamento')}:</b> ${esc(S.weigh)}</p>` : ''}`;
 }
