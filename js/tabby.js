@@ -64,11 +64,17 @@ function tabStage(r) {
   if (/final|gf/.test(n)) return 'final';
   return 'outra';
 }
-const stripHtml = h => {
-  const d = document.createElement('div');
-  d.innerHTML = String(h || '');
-  return d.textContent.trim();
-};
+/* DOMParser builds an inert document: no scripts, no image loads, no onerror. */
+const stripHtml = h => new DOMParser().parseFromString(String(h || ''), 'text/html').body.textContent.trim();
+const hasVotes = pairs => Object.values(pairs || {}).some(v => v && v.w);
+const sheetHasContent = () =>
+  !!String(S.motion || '').trim() ||
+  (S.args || []).length > 0 ||
+  hasVotes(S.my) ||
+  (S.myAdv || []).length > 0 ||
+  (S.wv || []).some(hasVotes) ||
+  (S.wadv || []).some(a => a && a.length);
+const sameName = (a, b) => !!a && String(a).trim().toLowerCase() === String(b || '').trim().toLowerCase();
 function adjsOf(p) {
   const A = p?.adjudicators || {};
   return [
@@ -217,6 +223,7 @@ const venueName = p => {
 };
 function applyMe(round) {
   if (TAB.me?.name) S.panel.me.name = String(TAB.me.name).slice(0, 200);
+  if (round && sheetHasContent() && !confirm('Isso vai substituir moção e rodada desta ficha. Continuar?')) round = null;
   if (round) applyRound(round);
   save();
   renderSetup();
@@ -237,6 +244,35 @@ function applyRound(round) {
 function applyPairing(p, round, notes = []) {
   const T = Object.fromEntries((TAB.teams || []).map(t => [tabId(t.url), t]));
   const A = Object.fromEntries((TAB.adjs || []).map(a => [tabId(a.url), a]));
+  const meId = TAB.me?.url ? tabId(TAB.me.url) : null;
+  const panel = adjsOf(p).map(([u, role]) => ({
+    id: tabId(u),
+    name: String(A[tabId(u)]?.name || '').slice(0, 200),
+    role
+  }));
+  const me = panel.find(x => x.id === meId);
+  const others = panel.filter(x => x !== me && x.name);
+  /* judges who already voted on this sheet and are not in the new panel */
+  const oldOthers = S.panel.others || [];
+  const dropped = others.length
+    ? oldOthers.filter(
+        (o, j) => (hasVotes(S.wv[j]) || (S.wadv[j] || []).length) && !others.some(x => sameName(x.name, o.name))
+      )
+    : [];
+  if (sheetHasContent()) {
+    const msg =
+      'Isso vai substituir moção, equipes e painel desta ficha. Continuar?' +
+      (dropped.length
+        ? '\n\nOs votos de ' +
+          dropped.map(o => o.name || 'Juiz ' + (oldOthers.indexOf(o) + 2)).join(', ') +
+          ' serão descartados (não estão no painel do Tabbycat).'
+        : '');
+    if (!confirm(msg)) {
+      tabMsg('Nada foi alterado.', 'muted');
+      renderTabPick();
+      return;
+    }
+  }
   const got = [];
   if (round) {
     const nm = applyRound(round);
@@ -254,23 +290,22 @@ function applyPairing(p, round, notes = []) {
     nt++;
   }
   if (nt) got.push(nt + ' equipes');
-  const meId = TAB.me?.url ? tabId(TAB.me.url) : null;
-  const panel = adjsOf(p).map(([u, role]) => ({
-    id: tabId(u),
-    name: String(A[tabId(u)]?.name || '').slice(0, 200),
-    role
-  }));
-  const me = panel.find(x => x.id === meId);
   if (me) {
     S.panel.me = { name: me.name || TAB.me.name || S.panel.me.name, role: me.role };
   } else if (TAB.me?.name) S.panel.me.name = TAB.me.name;
-  const others = panel.filter(x => x !== me && x.name);
   if (others.length) {
-    S.panel.others = others.map(x => ({ name: x.name, role: x.role }));
-    S.panel.others.forEach((o, i) => {
-      S.wv[i] = S.wv[i] || blankPairs();
-      S.wadv[i] = S.wadv[i] || [];
+    /* votes follow the judge by name, not by position in the panel */
+    const wv = [],
+      wadv = [];
+    others.forEach((x, i) => {
+      const j = oldOthers.findIndex(o => sameName(o.name, x.name));
+      wv[i] = j >= 0 && S.wv[j] ? S.wv[j] : blankPairs();
+      wadv[i] = j >= 0 && S.wadv[j] ? S.wadv[j] : [];
     });
+    S.panel.others = others.map(x => ({ name: x.name, role: x.role }));
+    S.wv = wv;
+    S.wadv = wadv;
+    if (dropped.length) notes.push('votos descartados de ' + esc(dropped.map(o => o.name || '?').join(', ')));
     got.push('painel com ' + (others.length + 1) + ' juízes');
   }
   const v = venueName(p);

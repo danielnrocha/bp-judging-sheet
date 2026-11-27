@@ -70,6 +70,12 @@ with sync_playwright() as pw:
     pg = ctx.new_page()
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
+    dlg = {'accept': True, 'seen': []}
+
+    def on_dialog(d):
+        dlg['seen'].append(d.message)
+        d.accept() if dlg['accept'] else d.dismiss()
+    pg.on('dialog', on_dialog)
     pg.goto(P)
     pg.wait_for_timeout(500)
     pg.click('[data-act=newT]'); pg.fill('#fName', 'Torneio V2'); pg.click('[data-act=saveT]'); pg.wait_for_timeout(300)
@@ -94,7 +100,31 @@ with sync_playwright() as pw:
     # escolher outra sala manualmente
     pg.select_option('#tabRoom', '1'); pg.wait_for_timeout(200)
     check('tabby: manual room pick (int sides)', S(pg, 'S.teams.OG.name') == 'Time 5' and S(pg, 'S.label') == 'Sala 102')
+    check('tabby: asks before replacing a filled sheet', any('substituir' in m for m in dlg['seen']), dlg['seen'])
     pg.select_option('#tabRoom', '0'); pg.wait_for_timeout(200)
+    # recusar a confirmação não muda nada
+    dlg['accept'] = False
+    pg.select_option('#tabRoom', '1'); pg.wait_for_timeout(200)
+    check('tabby: declining keeps the sheet', S(pg, 'S.label') == 'Sala 101' and S(pg, 'S.teams.OG.name') == 'Time 1')
+    dlg['accept'] = True
+    # votos seguem o juiz pelo nome, não pela posição
+    pg.evaluate("""(()=>{const S=window.__bp.S;
+      S.panel.others=[{name:'Beto Trainee',role:'trainee'},{name:'Carla Chair',role:'chair'}];
+      S.wv=[blankPairs(),blankPairs()];S.wv[1]['OG-OO'].w='OO';S.wadv=[[],['OG']];})()""")
+    pg.select_option('#tabRoom', '0'); pg.wait_for_timeout(200)
+    check('tabby: votes follow judge by name', S(pg, "S.wv[0]['OG-OO'].w") == 'OO' and S(pg, "S.wv[1]['OG-OO'].w") == '' and S(pg, 'S.wadv[0]') == ['OG'],
+          S(pg, "[S.panel.others, S.wv.map(p=>p['OG-OO'].w), S.wadv]"))
+    # juiz com voto que saiu do painel: avisa antes de descartar
+    dlg['seen'].clear()
+    pg.evaluate("""(()=>{const S=window.__bp.S;
+      S.panel.others=[{name:'Wing 1',role:'wing'}];S.wv=[blankPairs()];S.wv[0]['OG-OO'].w='OG';S.wadv=[[]];})()""")
+    pg.select_option('#tabRoom', '0'); pg.wait_for_timeout(200)
+    check('tabby: warns about dropped votes', any('Wing 1' in m for m in dlg['seen']), dlg['seen'])
+    check('tabby: Wing 1 vote not given to Carla', S(pg, "S.wv.every(p=>!p['OG-OO'].w)"))
+    # info slide hostil não executa nada
+    pg.evaluate('h=>stripHtml(h)', '<img src=x onerror="window.__pwned=1">oi')
+    pg.wait_for_timeout(300)
+    check('tabby: stripHtml is inert', pg.evaluate('window.__pwned') is None and pg.evaluate("stripHtml('<b>a</b> b')") == 'a b')
     pg.evaluate("document.querySelector('#setupBox').open=false")
 
     # --- anotar com sintaxe rápida
@@ -149,6 +179,10 @@ with sync_playwright() as pw:
     check('axes: drag arg to axis', S(pg, f'S.args[0].ax["{ax0}"]') == 2)
     add('MO', 'Liberdade individual #1')
     check('axes: quick #1', S(pg, f'S.args[7].ax["{ax0}"]') == 2)
+    pq = lambda v: pg.evaluate('v=>parseQuick(v)', v)
+    check('quick: #N mid-text stays text', pq('A regra #1 do mercado')['title'] == 'A regra #1 do mercado' and pq('A regra #1 do mercado')['ax'] == 0)
+    check('quick: #N before ! still works', pq('Ideia #2 !') == {'title': 'Ideia', 'link': None, 'q': 'f', 'ax': 2}, pq('Ideia #2 !'))
+    check('quick: \\#N is literal', pq('Ideia \\#2')['title'] == 'Ideia #2' and pq('Ideia \\#2')['ax'] == 0, pq('Ideia \\#2'))
     pg.click(f'.axchip[data-ax="{ax0}"] .axmain'); pg.wait_for_timeout(100)
     check('axes: highlight dims others', pg.locator('#flow.focusing').count() == 1 and pg.locator('#flow .arg.hit').count() == 2)
     pg.click(f'.axchip[data-ax="{ax0}"] .axmain')

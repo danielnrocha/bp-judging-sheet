@@ -44,7 +44,7 @@ const QUICK = [
   ['+PM1 texto', 'complementa PM1 (só segundas falas, na própria dupla)'],
   ['^PM1 texto', 'verticaliza PM1 (só closing, no opening da bancada; ^3PM1 forte, ^1PM1 fraca)'],
   ['*texto', 'caracterização (de um ator, do status quo, do mundo da moção)'],
-  ['texto #2', 'contribui para o 2º eixo da barra (#2s: sopesa esse eixo)'],
+  ['texto #2', 'contribui para o 2º eixo da barra (#2s: sopesa esse eixo; só no fim, \\#2 deixa o texto como está)'],
   ['texto !', 'marca como forte (texto ? marca como fraco)']
 ];
 function keysModal() {
@@ -81,12 +81,13 @@ function parseQuick(v) {
     };
     t = m[4];
   }
-  t = t.replace(/(^|\s)#([1-9])([scr]?)(?=\s|$)/i, (_, p, n, ty) => {
+  /* "#N" only at the end (before an optional ! or ?); "\#N" keeps the text literal */
+  t = t.replace(/\s#([1-9])([scr]?)(?=\s*[!?]?$)/i, (_, n, ty) => {
     ax = +n;
     axt = ty ? 'c' : 'a'; // #2s: sopesa o eixo (c e r aceitos por compatibilidade)
-    return p;
+    return '';
   });
-  t = t.trim();
+  t = t.replace(/\\#(?=[1-9])/g, '#').trim();
   if (/\s!$/.test(t) || t === '!') {
     q = 'f';
     t = t.slice(0, -1).trim();
