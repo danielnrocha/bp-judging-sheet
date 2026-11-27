@@ -352,7 +352,24 @@ window.BP_I18N_EXTRA = {
       /^Clashes e métricas, por ordem de peso:$/,
       () => pick('Clashes and metrics, by weight:', 'Clashes y métricas, por orden de peso:')
     ],
-    [/^Sopesamento: (.*)$/, m => pick('Weighing: ', 'Sopesamiento: ') + m[1]]
+    [/^Sopesamento: (.*)$/, m => pick('Weighing: ', 'Sopesamiento: ') + m[1]],
+    /* linha de eixo no roteiro da oral: "- Clash <título> (relevância alta): levou CG (Nome). <nota>" */
+    [
+      /^- (Clash|Métrica|Caracterização) (.+?) \(relevância (baixa|média|alta)\)(?:: levou (\S+))?([\s\S]*)$/,
+      m => {
+        const k = { Clash: ['Clash', 'Clash'], Métrica: ['Metric', 'Métrica'], Caracterização: ['Characterization', 'Caracterización'] }[m[1]];
+        const r = { baixa: ['low', 'baja'], média: ['medium', 'media'], alta: ['high', 'alta'] }[m[3]];
+        return (
+          '- ' +
+          pick(k[0], k[1]) +
+          ' ' +
+          m[2] +
+          pick(' (' + r[0] + ' relevance)', ' (relevancia ' + r[1] + ')') +
+          (m[4] ? pick(': won by ', ': ganó ') + m[4] : '') +
+          m[5]
+        );
+      }
+    ]
   ]
 };
 Object.assign(window.BP_I18N_EXTRA.dict, {
