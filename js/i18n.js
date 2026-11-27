@@ -718,7 +718,7 @@
     ],
     [/^Em confronto: (.+)$/, m => pick('In clash: ', 'En choque: ') + words(m[1])],
     [/^Respostas recebidas: (.+)$/, m => pick('Rebuttals received: ', 'Respuestas recibidas: ') + words(m[1])],
-    [/^responde (.+)$/, m => pick('responds to ', 'responde a ') + m[1]],
+    [/^responde (?!a )(.+)$/, m => pick('responds to ', 'responde a ') + m[1]],
     [
       /^(\S+) responde (\S+) \((.*)\): alvo (.+)$/,
       (m, t) =>
@@ -819,17 +819,30 @@
     const p = n.parentElement;
     return !p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName) || p.closest('[data-noi18n]');
   };
+  /* O que o próprio tradutor escreveu não é traduzido de novo. Sem isso, uma regra cuja saída casa com
+   * ela mesma (ex.: "responde PM1" -> "responde a PM1" em espanhol) faz o MutationObserver traduzir
+   * sem parar e trava a aba. */
+  const wrote = new WeakMap(); // nó de texto -> último texto escrito pelo tradutor
+  const wroteAttr = new WeakMap(); // elemento -> { atributo: último valor escrito }
   function doText(n) {
-    if (skip(n)) return;
+    if (skip(n) || wrote.get(n) === n.data) return;
     const t = tx(n.data);
-    if (t !== n.data) n.data = t;
+    if (t !== n.data) {
+      wrote.set(n, t);
+      n.data = t;
+    }
   }
   function doAttr(e) {
+    const W = wroteAttr.get(e) || {};
     for (const a of ATTRS) {
       const v = e.getAttribute(a);
-      if (v) {
+      if (v && W[a] !== v) {
         const t = tx(v);
-        if (t !== v) e.setAttribute(a, t);
+        if (t !== v) {
+          W[a] = t;
+          wroteAttr.set(e, W);
+          e.setAttribute(a, t);
+        }
       }
     }
   }
