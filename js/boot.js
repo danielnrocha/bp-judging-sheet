@@ -194,6 +194,7 @@ window.__bp = {
     'linkMenu',
     'teamModal',
     'parseQuick',
+    'printSheet',
     'renderTabSetup',
     'poiModal',
     'pendings',

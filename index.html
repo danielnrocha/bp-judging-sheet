@@ -24,7 +24,7 @@
       <a class="small" id="backT" href="#/">← Torneio</a>
       <nav class="tabs" id="dTabs"><a data-v="ficha">Debate</a><a data-v="delib" data-key="D">Deliberação</a></nav>
       <div class="grow"><input id="motion" placeholder="Moção" aria-label="Moção"></div>
-      <span class="save" id="saveSt"></span>
+      <button class="sm" data-act="pdf" title="Exportar a ficha em PDF">PDF</button><span class="save" id="saveSt"></span>
     </div>
     <div class="toprow" style="padding-top:0">
       <div class="timer"><select id="curSp" aria-label="Discurso atual" style="width:auto"></select><span class="clock" id="clock" data-key="+ −">0:00</span><button id="tStart" class="pri sm" data-key="Espaço">Iniciar</button><button id="tReset" class="sm" data-key="R">Zerar</button><button id="tNext" class="sm" data-key="]">Próximo discurso</button><button id="poiBtn" class="sm poibtn" data-key="P" title="Registrar um POI (atalho: P)">POI</button><span class="zone" id="zone"></span></div>
@@ -96,6 +96,7 @@
   </div>
 </section>
 </main>
+<div id="v-print" aria-hidden="true"></div>
 <div class="modal" id="modal"><div class="box" id="mbox"></div></div>
 <div class="toast" id="toast"><span id="tmsg"></span><button class="sm" id="tundo">Desfazer</button></div>
 
@@ -124,6 +125,7 @@
 <script src="js/poi.js"></script>
 <script src="js/pending.js"></script>
 <script src="js/tour.js"></script>
+<script src="js/pdf.js"></script>
 <script src="js/boot.js"></script>
 </body>
 </html>

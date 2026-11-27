@@ -182,18 +182,16 @@ function checkSpeaks(R) {
   $('#speakChk').innerHTML = out.join('') || '<span class="muted small">Preencha as notas para checar.</span>';
 }
 function renderOA(R) {
+  $('#oa').textContent = oaText(R);
+}
+/* roteiro da oral como texto (também vai para o PDF com ballot) */
+function oaText(R, noSpeaks) {
   let t = `Moção: ${S.motion}\n${STN[S.stage]}${S.round_no ? ' · rodada ' + S.round_no : ''}\n`;
   if (isOut()) {
-    if (!R.adv) {
-      $('#oa').textContent = 'Complete os votos.';
-      return;
-    }
+    if (!R.adv) return 'Complete os votos.';
     t += `${S.stage === 'final' ? 'Campeã' : 'Avançam'}: ${R.adv.map(tName).join(' e ')}.\n${R.unan ? 'Decisão unânime.' : 'Decisão com split. Votos: ' + TEAMS.map(x => x + ' ' + R.cnt[x]).join(', ') + '.'}\n`;
   } else {
-    if (!R.order) {
-      $('#oa').textContent = 'Complete os votos de todas as comparações.';
-      return;
-    }
+    if (!R.order) return 'Complete os votos de todas as comparações.';
     const o = R.order;
     t += `Resultado: ${o.map((x, i) => `${i + 1}º ${tName(x)}`).join(', ')}.\n`;
     const spl = R.rows.filter(r => !r.unan);
@@ -232,11 +230,11 @@ function renderOA(R) {
     });
     if (S.weigh.trim()) t += `Sopesamento: ${S.weigh.trim()}\n`;
   }
-  if (S.speaksOn) {
+  if (S.speaksOn && !noSpeaks) {
     const sp = SP.filter(x => finalScore(x.k)).map(x => `${x.k} ${finalScore(x.k)}`);
     if (sp.length) t += `\nSpeaks: ${sp.join(', ')}`;
   }
-  $('#oa').textContent = t;
+  return t;
 }
 function renderDerived() {
   if (route.v !== 'delib') return;

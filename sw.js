@@ -1,6 +1,6 @@
 // Offline support: the app keeps opening without internet after the first visit.
-const CACHE='bp-v5';
-const SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./css/app.css','./js/axes.js','./js/boot.js','./js/consultas.js','./js/delib.js','./js/drag.js','./js/events.js','./js/flow.js','./js/home.js','./js/i18n-extra.js','./js/i18n.js','./js/lenses.js','./js/model.js','./js/pending.js','./js/poi.js','./js/results.js','./js/router.js','./js/save.js','./js/shortcuts.js','./js/state.js','./js/store.js','./js/tabby.js','./js/teams.js','./js/theme.js','./js/timer.js','./js/tour.js','./js/ui.js','./fonts/archivo-latin-standard-normal.woff2','./fonts/inter-latin-wght-normal.woff2'];
+const CACHE='bp-v6';
+const SHELL=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./css/app.css','./js/axes.js','./js/boot.js','./js/consultas.js','./js/delib.js','./js/drag.js','./js/events.js','./js/flow.js','./js/home.js','./js/i18n-extra.js','./js/i18n.js','./js/lenses.js','./js/model.js','./js/pending.js','./js/pdf.js','./js/poi.js','./js/results.js','./js/router.js','./js/save.js','./js/shortcuts.js','./js/state.js','./js/store.js','./js/tabby.js','./js/teams.js','./js/theme.js','./js/timer.js','./js/tour.js','./js/ui.js','./fonts/archivo-latin-standard-normal.woff2','./fonts/inter-latin-wght-normal.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{
