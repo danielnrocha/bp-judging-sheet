@@ -1,6 +1,6 @@
 # BP Judging Sheet
 
-<img width="1469" height="935" alt="Screenshot 2026-11-26 at 13 34 26" src="https://github.com/user-attachments/assets/7cd4d0a9-2452-456d-b920-0f7ecd23b7da" />
+![BP Judging Sheet demo: notes per speech, linked ideas, deliberation with Ranked Pairs, speaker points, clashes and metrics, timer and POIs](docs/demo.gif)
 
 A flow sheet for judging British Parliamentary (BP) debates: take notes, deliberate and keep a history of every round, following the WUDC adjudication manual. The app itself is titled "Ficha BP" (Portuguese for "BP sheet").
 
