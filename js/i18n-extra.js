@@ -225,9 +225,25 @@ window.BP_I18N_EXTRA = {
     'Escolha a sala:': ['Pick the room:', 'Elige la sala:'],
     'Escolher sala...': ['Choose room...', 'Elegir sala...'],
     Rodada: ['Round', 'Ronda'],
-    Sala: ['Room', 'Sala']
+    Sala: ['Room', 'Sala'],
+    'Isso vai substituir moção, equipes e painel desta ficha. Continuar?': [
+      'This will replace the motion, teams and panel on this sheet. Continue?',
+      'Esto reemplazará la moción, los equipos y el panel de esta ficha. ¿Continuar?'
+    ],
+    'Isso vai substituir moção e rodada desta ficha. Continuar?': [
+      'This will replace the motion and round on this sheet. Continue?',
+      'Esto reemplazará la moción y la ronda de esta ficha. ¿Continuar?'
+    ],
+    'Nada foi alterado.': ['Nothing was changed.', 'No se cambió nada.']
   },
   rules: pick => [
+    [
+      /^Os votos de (.+) serão descartados \(não estão no painel do Tabbycat\)\.$/,
+      m =>
+        pick('The votes of ', 'Los votos de ') +
+        m[1] +
+        pick(' will be discarded (not on the Tabbycat panel).', ' se descartarán (no están en el panel de Tabbycat).')
+    ],
     [
       /^(responde|flipa|mitiga|sopesa|complementa|verticaliza)(?: \((fraca|média|forte)\))? (\S+)$/,
       m => {

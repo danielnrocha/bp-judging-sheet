@@ -223,7 +223,7 @@ const venueName = p => {
 };
 function applyMe(round) {
   if (TAB.me?.name) S.panel.me.name = String(TAB.me.name).slice(0, 200);
-  if (round && sheetHasContent() && !confirm('Isso vai substituir moção e rodada desta ficha. Continuar?')) round = null;
+  if (round && sheetHasContent() && !confirm((window.BP_T || (x => x))('Isso vai substituir moção e rodada desta ficha. Continuar?'))) round = null;
   if (round) applyRound(round);
   save();
   renderSetup();
@@ -267,7 +267,7 @@ function applyPairing(p, round, notes = []) {
           dropped.map(o => o.name || 'Juiz ' + (oldOthers.indexOf(o) + 2)).join(', ') +
           ' serão descartados (não estão no painel do Tabbycat).'
         : '');
-    if (!confirm(msg)) {
+    if (!confirm(window.BP_T ? BP_T(msg) : msg)) {
       tabMsg('Nada foi alterado.', 'muted');
       renderTabPick();
       return;
