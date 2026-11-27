@@ -16,16 +16,17 @@ function evidence(a, b) {
   S.args.forEach(x => {
     const tx = teamOf(x);
     if (tx !== a && tx !== b) return;
-    x.to.forEach(id => {
-      const y = S.args.find(z => z.id === id);
+    x.links.forEach(l => {
+      const y = argById(l.id);
       if (!y) return;
       const ty = teamOf(y);
       if ((tx === a && ty === b) || (tx === b && ty === a))
         L.push(
-          `<div class="ev">${code(x)} responde ${code(y)} (${esc(y.title).slice(0, 40)}): alvo ${RES[y.res]?.toLowerCase() || 'sem veredito'}</div>`
+          `<div class="ev">${code(x)} ${linkLabel(l)} ${code(y)} (${esc(y.title).slice(0, 40)}): alvo ${status(y) === 'flip' ? 'flipado' : RES[y.res]?.toLowerCase() || 'sem veredito'}</div>`
         );
     });
   });
+  L.push(axesEvidence(a, b));
   const sa = stats(a),
     sbb = stats(b);
   L.push(
@@ -222,6 +223,14 @@ function renderOA(R) {
       const why = S.my[pk(k[0], k[1])]?.why;
       t += `- ${x} sobre ${y}${why ? ': ' + why : '.'}\n`;
     });
+  }
+  const ax = S.axes.filter(x => x.title);
+  if (ax.length) {
+    t += '\nClashes e métricas, por ordem de peso:\n';
+    ax.forEach(x => {
+      t += `- ${AXK[x.kind]} ${x.title} (relevância ${REL[x.rel].toLowerCase()})${x.win ? ': levou ' + tName(x.win) : ''}${x.note ? '. ' + x.note : ''}\n`;
+    });
+    if (S.weigh.trim()) t += `Sopesamento: ${S.weigh.trim()}\n`;
   }
   if (S.speaksOn) {
     const sp = SP.filter(x => finalScore(x.k)).map(x => `${x.k} ${finalScore(x.k)}`);

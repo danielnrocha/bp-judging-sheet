@@ -14,10 +14,16 @@ $('#tundo').onclick = () => {
   $('#toast').classList.remove('on');
 };
 function modal(h) {
+  modal.onclose = null;
   $('#mbox').innerHTML = h;
   $('#modal').classList.add('on');
 }
-const closeM = () => $('#modal').classList.remove('on');
+const closeM = () => {
+  $('#modal').classList.remove('on');
+  const f = modal.onclose;
+  modal.onclose = null;
+  if (f) f();
+};
 $('#modal').addEventListener('click', e => {
   if (e.target.id === 'modal') closeM();
 });

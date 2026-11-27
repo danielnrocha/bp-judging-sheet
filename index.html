@@ -50,12 +50,18 @@
 <section id="v-tour" hidden></section>
 <section id="v-ficha" hidden>
   <details id="setupBox"><summary><h3 style="display:inline">Preparação: fase, painel e nomes</h3></summary>
+    <div class="panel tabsetup" id="tabSetup"></div>
     <div class="setup"><div class="panel" id="metaSetup"></div><div class="panel" id="panelSetup"></div><div class="panel" id="namesSetup"></div></div>
   </details>
+  <div id="axesBar"></div>
+  <div id="lensBar"></div>
   <div class="mob row" style="margin:10px 0" id="mobTeams"></div>
   <div class="flow" id="flow"></div>
-  <h2 style="margin-top:22px">Confrontos e comparações</h2>
-  <p class="hint">Cada choque relevante: qual argumento enfrentou qual, se os debatedores compararam ou se você teve que comparar, e quem levou.</p>
+  <div id="lensIdea" hidden></div>
+  <div id="lensAxis" hidden></div>
+  <datalist id="dlTeam"></datalist><datalist id="dlSpk"></datalist><datalist id="dlAdj"></datalist>
+  <h2 style="margin-top:22px">Confrontos diretos</h2>
+  <p class="hint">Argumento contra argumento: qual enfrentou qual, se os debatedores compararam ou se você teve que comparar, e quem levou.</p>
   <div class="panel">
     <div class="grid3" style="align-items:end"><div><label class="l" for="cA">Argumento A</label><select id="cA"></select></div><div><label class="l" for="cB">Argumento B</label><select id="cB"></select></div><div><button class="pri" data-act="addClash" style="width:100%">Adicionar confronto</button></div></div>
     <div id="clashes"></div>
@@ -93,6 +99,7 @@
 <div class="toast" id="toast"><span id="tmsg"></span><button class="sm" id="tundo">Desfazer</button></div>
 
 <script>/* a biblioteca do Supabase só é carregada por quem conectou um Supabase */try{if(window.BP_CONFIG||localStorage.getItem('bp.config'))document.write('<script src="vendor/supabase-2.45.4.js"><\/script>')}catch(e){}</script>
+<script src="js/i18n-extra.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/store.js"></script>
 <script src="js/model.js"></script>
@@ -107,6 +114,12 @@
 <script src="js/ui.js"></script>
 <script src="js/events.js"></script>
 <script src="js/timer.js"></script>
+<script src="js/lenses.js"></script>
+<script src="js/axes.js"></script>
+<script src="js/drag.js"></script>
+<script src="js/teams.js"></script>
+<script src="js/shortcuts.js"></script>
+<script src="js/tabby.js"></script>
 <script src="js/boot.js"></script>
 </body>
 </html>

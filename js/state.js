@@ -1,4 +1,9 @@
 /* ---------- state ---------- */
+/* Ações extras registradas pelos módulos de funcionalidade (axes, lenses, drag, tabby...).
+ * ACTS[nome](botão, argumento, confronto, evento): devolver false evita salvar e redesenhar o flow. */
+const ACTS = {};
+/* argumento selecionado (foco e atalhos); não é salvo */
+let SEL = null;
 let user = null,
   S = null,
   D = null,
@@ -13,8 +18,36 @@ const need = () => (S.stage === 'final' ? 1 : 2);
 function code(a) {
   return a.sp + (S.args.filter(x => x.sp === a.sp).indexOf(a) + 1);
 }
-const recv = a => S.args.filter(x => x.to.includes(a.id));
-const status = a => a.res || (recv(a).length ? 'resp' : 'sem');
+/* ligações: a.links é a fonte; a.to (respostas e flips) é mantido para exportação e views SQL */
+const argById = id => S.args.find(x => x.id === id);
+const side = t => (t === 'OG' || t === 'CG' ? 'gov' : 'opp');
+const isClosing = t => t === 'CG' || t === 'CO';
+const syncTo = a => (a.to = a.links.filter(l => l.t === 'r' || l.t === 'f').map(l => l.id));
+const incoming = (a, types) =>
+  S.args.flatMap(x => x.links.filter(l => l.id === a.id && (!types || types.includes(l.t))).map(l => ({ a: x, l })));
+const recv = a => incoming(a, 'rf').map(x => x.a);
+const flipped = a => incoming(a, 'f').length > 0;
+const status = a => a.res || (flipped(a) ? 'flip' : recv(a).length ? 'resp' : 'sem');
+/* que ligações fazem sentido de "a" para "b" (a primeira é a sugerida) */
+function linkOptions(a, b) {
+  const ta = teamOf(a),
+    tb = teamOf(b);
+  if (side(ta) !== side(tb)) return ['r', 'f'];
+  if (ta === tb) return ['c'];
+  return isClosing(ta) && !isClosing(tb) ? ['v', 'c'] : ['c'];
+}
+function setLink(a, id, t, s) {
+  a.links = a.links.filter(l => l.id !== id);
+  a.links.push(t === 'v' ? { id, t, s: s || 2 } : { id, t });
+  if (a.kind === 'c' && (t === 'r' || t === 'f')) a.kind = 'r';
+  if (a.kind === 'c' && t === 'v') a.kind = 'x';
+  syncTo(a);
+}
+function unsetLink(a, id) {
+  a.links = a.links.filter(l => l.id !== id);
+  syncTo(a);
+}
+const linkLabel = l => LINKV[l.t] + (l.t === 'v' ? ' (' + FORCE[l.s].toLowerCase() + ')' : '');
 function stats(t) {
   const L = S.args.filter(a => teamOf(a) === t);
   return {

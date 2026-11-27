@@ -45,7 +45,13 @@ function runQuery() {
   if (q) {
     L = L.filter(d => {
       const s = d.data;
-      const hay = [d.motion, s.info, ...TEAMS.map(t => s.teams[t].name + ' ' + s.teams[t].sp.join(' '))]
+      const hay = [
+        d.motion,
+        s.info,
+        s.weigh,
+        ...s.axes.map(x => x.title),
+        ...TEAMS.map(t => s.teams[t].name + ' ' + s.teams[t].sp.join(' '))
+      ]
         .join(' ')
         .toLowerCase();
       const ah = s.args.filter(a =>
@@ -196,7 +202,9 @@ function exportAll(kind) {
               'tipo',
               'veredito',
               'responde_a',
-              'nota'
+              'nota',
+              'ligacoes',
+              'clashes_metricas'
             ]
           ].concat(
             ALL.ds.flatMap(d => {
@@ -221,7 +229,18 @@ function exportAll(kind) {
                     return x ? code(x) : '';
                   })
                   .join(' '),
-                a.note
+                a.note,
+                a.links
+                  .map(l => {
+                    const x = s.args.find(y => y.id === l.id);
+                    return x ? linkLabel(l) + ' ' + code(x) : '';
+                  })
+                  .filter(Boolean)
+                  .join('; '),
+                s.axes
+                  .filter(x => a.ax[x.id])
+                  .map(x => x.title + ' (' + a.ax[x.id] + ')')
+                  .join('; ')
               ]);
             })
           )

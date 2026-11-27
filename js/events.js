@@ -10,7 +10,31 @@ document.addEventListener('submit', e => {
     localStorage.removeItem('bp.draft.' + D.id + '.' + sp);
     BPS.mark('bp.draft.' + D.id + '.' + sp);
   } catch (x) {}
-  S.args.push({ id: uid(), sp, title: v, why: '', imp: '', q: '', kind: 'c', to: [], res: '' });
+  const q = parseQuick(v);
+  const na = {
+    id: uid(),
+    sp,
+    title: q.title || v,
+    why: '',
+    imp: '',
+    note: '',
+    q: q.q,
+    kind: 'c',
+    to: [],
+    links: [],
+    ax: {},
+    res: ''
+  };
+  S.args.push(na);
+  if (q.link) {
+    const tgt = S.args.find(x => x !== na && code(x).toUpperCase() === q.link.code);
+    if (tgt) setLink(na, tgt.id, q.link.t, q.link.s);
+    else toast('Não achei ' + q.link.code + ' para ligar');
+  }
+  if (q.ax) {
+    const x = S.axes[q.ax - 1];
+    if (x) na.ax[x.id] = 2;
+  }
   save();
   renderFlow();
   document.querySelector(`form.add[data-sp="${sp}"] input`)?.focus();
@@ -180,19 +204,23 @@ document.addEventListener('click', async e => {
       a.open = !a.open;
       break;
     case 'unlink':
-      a.to = a.to.filter(x => x !== b.dataset.v);
+      unsetLink(a, b.dataset.v);
       break;
     case 'del': {
       const i = S.args.indexOf(a);
       const cl = S.clashes.filter(x => x.a === a.id || x.b === a.id);
-      const refs = S.args.filter(x => x.to.includes(a.id));
+      const refs = S.args.flatMap(x => x.links.filter(l => l.id === a.id).map(l => [x, l]));
       S.args.splice(i, 1);
       S.clashes = S.clashes.filter(x => !cl.includes(x));
-      refs.forEach(x => (x.to = x.to.filter(y => y !== a.id)));
+      refs.forEach(([x]) => unsetLink(x, a.id));
+      if (SEL === a.id) SEL = null;
       toast('Argumento apagado', () => {
         S.args.splice(i, 0, a);
         S.clashes.push(...cl);
-        refs.forEach(x => x.to.push(a.id));
+        refs.forEach(([x, l]) => {
+          x.links.push(l);
+          syncTo(x);
+        });
         save();
         renderFlow();
       });
@@ -341,7 +369,8 @@ document.addEventListener('click', async e => {
       );
       return;
     default:
-      r = false;
+      if (ACTS[act]) r = (await ACTS[act](b, a, c, e)) !== false;
+      else r = false;
   }
   if (r && S) {
     save();
@@ -352,9 +381,10 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.dataset.act === 'link') {
     const a = argOf(t);
-    if (t.value) {
-      a.to.push(t.value);
-      if (a.kind === 'c') a.kind = 'r';
+    const tgt = t.value && argById(t.value);
+    if (tgt) {
+      const ty = t.closest('.det')?.querySelector('[data-act=ltype]')?.value || linkOptions(a, tgt)[0];
+      setLink(a, tgt.id, ty);
     }
     save();
     renderFlow();

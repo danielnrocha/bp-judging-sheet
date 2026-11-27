@@ -626,6 +626,7 @@
         'Así el navegador puede no guardar tus notas de forma segura y la app no funciona sin internet. Usa la dirección publicada de la app.'
       ]
   };
+  Object.assign(DICT, (window.BP_I18N_EXTRA && window.BP_I18N_EXTRA.dict) || {});
   const ord = n =>
     L === 'en' ? n + ['th', 'st', 'nd', 'rd'][n % 10 > 3 || Math.floor((n % 100) / 10) === 1 ? 0 : n % 10] : n + 'º';
   const W = {
@@ -717,7 +718,7 @@
     ],
     [/^Em confronto: (.+)$/, m => pick('In clash: ', 'En choque: ') + words(m[1])],
     [/^Respostas recebidas: (.+)$/, m => pick('Rebuttals received: ', 'Respuestas recibidas: ') + words(m[1])],
-    [/^responde (.+)$/, m => pick('responds to ', 'responde a ') + m[1]],
+    [/^responde (?!a )(.+)$/, m => pick('responds to ', 'responde a ') + m[1]],
     [
       /^(\S+) responde (\S+) \((.*)\): alvo (.+)$/,
       (m, t) =>
@@ -757,7 +758,12 @@
       /^Decisão com split\. Votos: (.+)\.$/,
       m => pick('Split decision. Votes: ', 'Decisión dividida. Votos: ') + m[1] + '.'
     ],
-    [/^Decisão com split\. (.+)$/, m => pick('Split decision. ', 'Decisión dividida. ') + words(m[1])],
+    [
+      /^Decisão com split\. (.+)$/,
+      m =>
+        pick('Split decision. ', 'Decisión dividida. ') +
+        words(m[1]).replace(/\((majority|mayoría): ([^)]*)\)/g, (_, k, v) => `(${k}: ${v.split(' e ').join(pick(' and ', ' y '))})`)
+    ],
     [/^Resultado: (.+)\.$/, m => pick('Result: ', 'Resultado: ') + m[1].replace(/(\d)º/g, (_, n) => ord(+n)) + '.'],
     [
       /^Empate cíclico resolvido por Ranked Pairs\. Comparação ignorada: (.+)\.$/,
@@ -772,6 +778,7 @@
     [/^- (\S+) sobre (\S+)(.*)$/, m => '- ' + m[1] + pick(' over ', ' sobre ') + m[2] + m[3]]
   ];
   const cache = new Map();
+  if (window.BP_I18N_EXTRA && window.BP_I18N_EXTRA.rules) RULES.unshift(...window.BP_I18N_EXTRA.rules(pick));
   function core(s) {
     const d = DICT[s];
     if (d) return d[L === 'en' ? 0 : 1];
@@ -812,17 +819,30 @@
     const p = n.parentElement;
     return !p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName) || p.closest('[data-noi18n]');
   };
+  /* O que o próprio tradutor escreveu não é traduzido de novo. Sem isso, uma regra cuja saída casa com
+   * ela mesma (ex.: "responde PM1" -> "responde a PM1" em espanhol) faz o MutationObserver traduzir
+   * sem parar e trava a aba. */
+  const wrote = new WeakMap(); // nó de texto -> último texto escrito pelo tradutor
+  const wroteAttr = new WeakMap(); // elemento -> { atributo: último valor escrito }
   function doText(n) {
-    if (skip(n)) return;
+    if (skip(n) || wrote.get(n) === n.data) return;
     const t = tx(n.data);
-    if (t !== n.data) n.data = t;
+    if (t !== n.data) {
+      wrote.set(n, t);
+      n.data = t;
+    }
   }
   function doAttr(e) {
+    const W = wroteAttr.get(e) || {};
     for (const a of ATTRS) {
       const v = e.getAttribute(a);
-      if (v) {
+      if (v && W[a] !== v) {
         const t = tx(v);
-        if (t !== v) e.setAttribute(a, t);
+        if (t !== v) {
+          W[a] = t;
+          wroteAttr.set(e, W);
+          e.setAttribute(a, t);
+        }
       }
     }
   }

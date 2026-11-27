@@ -183,3 +183,27 @@ window.__bp = {
   migrate,
   blankS
 };
+/* Se algum módulo não carregou (rede instável no primeiro acesso), avisa em vez de falhar em silêncio. */
+{
+  const need = [
+    'renderFlow',
+    'renderDelib',
+    'toggleT',
+    'renderIdeas',
+    'renderAxesBar',
+    'linkMenu',
+    'teamModal',
+    'parseQuick',
+    'renderTabSetup'
+  ];
+  const miss = need.filter(n => typeof window[n] !== 'function');
+  if (miss.length) {
+    const d = document.createElement('div');
+    d.className = 'loadfail';
+    d.setAttribute('role', 'alert');
+    d.innerHTML =
+      '<b>Parte do app não carregou.</b> Recarregue a página. Suas anotações estão salvas neste aparelho. <button class="sm">Recarregar</button>';
+    d.querySelector('button').onclick = () => location.reload();
+    document.body.prepend(d);
+  }
+}
