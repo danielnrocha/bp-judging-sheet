@@ -7,7 +7,7 @@ function toast(m, u) {
   $('#tundo').hidden = !u;
   $('#toast').classList.add('on');
   clearTimeout(tt);
-  tt = setTimeout(() => $('#toast').classList.remove('on'), 5000);
+  tt = setTimeout(() => $('#toast').classList.remove('on'), Math.max(5000, String(m).length * 60));
 }
 $('#tundo').onclick = () => {
   if (undoFn) undoFn();

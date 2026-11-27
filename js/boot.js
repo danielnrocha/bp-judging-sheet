@@ -194,7 +194,10 @@ window.__bp = {
     'linkMenu',
     'teamModal',
     'parseQuick',
-    'renderTabSetup'
+    'renderTabSetup',
+    'poiModal',
+    'pendings',
+    'tourStart'
   ];
   const miss = need.filter(n => typeof window[n] !== 'function');
   if (miss.length) {

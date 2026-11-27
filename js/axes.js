@@ -12,15 +12,24 @@ function axEngage(x) {
     })
   );
 }
+/* " · ⚖ 1 · ★ 1": quantos argumentos de comparativa e de relevância a bancada fez neste eixo */
+function axKinds(L, x) {
+  return ['c', 'r']
+    .map(t => {
+      const n = L.filter(a => axType(a, x.id) === t).length;
+      return n ? ' · ' + AXTI[t] + ' ' + n : '';
+    })
+    .join('');
+}
 function renderAxesBar() {
   const chips = S.axes
     .map(
       x =>
-        `<span class="axchip ${AXF === x.id ? 'on' : ''} K${x.kind}" data-ax="${x.id}"><button class="axmain" data-act="axf" data-v="${x.id}" title="Destacar argumentos deste ${AXK[x.kind].toLowerCase()}"><b>${x.kind === 'm' ? '◇' : '⚔'}</b> ${esc(x.title) || '?'} <i title="Relevância ${REL[x.rel].toLowerCase()}">${dots(x.rel)}</i>${x.win ? ` <span class="T${x.win}"><span class="tc">${x.win}</span></span>` : ''}</button><button class="axedit" data-act="axedit" data-v="${x.id}" aria-label="Editar ${esc(x.title)}">⋯</button></span>`
+        `<span class="axchip ${AXF === x.id ? 'on' : ''} K${x.kind}" data-ax="${x.id}"><button class="axmain" data-act="axf" data-v="${x.id}" title="Destacar argumentos deste ${AXK[x.kind].toLowerCase()}"><b>${AXI[x.kind]}</b> ${esc(x.title) || '?'} <i title="Relevância ${REL[x.rel].toLowerCase()}">${dots(x.rel)}</i>${x.win ? ` <span class="T${x.win}"><span class="tc">${x.win}</span></span>` : ''}</button><button class="axedit" data-act="axedit" data-v="${x.id}" aria-label="Editar ${esc(x.title)}">⋯</button></span>`
     )
     .join('');
   $('#axesBar').innerHTML =
-    `<div class="axes"><span class="axlbl">Clashes e métricas</span>${chips}<form class="axadd"><input placeholder="${S.axes.length ? '+ outro' : '+ clash ou métrica (ex.: liberdade x segurança)'}, Enter" aria-label="Novo clash ou métrica"></form></div>`;
+    `<div class="axes"><span class="axlbl">Clashes e métricas</span>${chips}<form class="axadd"><input placeholder="${S.axes.length ? '+ outro' : '+ clash, m: métrica ou k: caracterização'}, Enter" aria-label="Novo clash ou métrica"></form></div>`;
 }
 document.addEventListener('submit', e => {
   const f = e.target.closest('form.axadd');
@@ -30,9 +39,9 @@ document.addEventListener('submit', e => {
   let v = i.value.trim();
   if (!v) return;
   let kind = 'c';
-  const m = v.match(/^(m|métrica|metrica|c|clash)\s*:\s*(.+)$/i);
+  const m = v.match(/^(m|métrica|metrica|c|clash|k|car|caracterização|caracterizacao)\s*:\s*(.+)$/i);
   if (m) {
-    kind = /^m/i.test(m[1]) ? 'm' : 'c';
+    kind = /^m/i.test(m[1]) ? 'm' : /^(k|car)/i.test(m[1]) ? 'k' : 'c';
     v = m[2].trim();
   }
   S.axes.push({ id: uid(), title: v, kind, rel: 2, by: '', win: '', note: '' });
@@ -57,7 +66,7 @@ function axModal(id) {
     'axset',
     x.kind,
     Object.entries(AXK).map(([k, v]) => [k, v])
-  )}<span class="small muted" style="padding-top:4px">Clash: choque central. Métrica: critério para pesar.</span></div>
+  )}<span class="small muted" style="padding-top:4px">Clash: choque central. Métrica: critério para pesar. Caracterização: como cada lado descreve um ator ou o mundo.</span></div>
 <label class="l">Relevância para a decisão</label><div class="chips">${pick('axrel', String(x.rel), Object.entries(REL))}</div>
 <label class="l">Quem introduziu</label><div class="chips">${pick(
     'axby',
@@ -72,7 +81,7 @@ function axModal(id) {
 <label class="l" for="axNote">Por quê / nota</label><textarea id="axNote" data-axf="note" data-ax="${x.id}" rows="2">${esc(x.note)}</textarea>
 <label class="l">Engajamento</label><div class="axeng">${TEAMS.map(
     t =>
-      `<div class="T${t}"><span class="tc">${t}</span> <span class="small">${E[t].args.map(a => code(a) + ' ' + dots(a.ax[x.id])).join(', ') || '<span class="muted">nada</span>'}</span></div>`
+      `<div class="T${t}"><span class="tc">${t}</span> <span class="small">${E[t].args.map(a => code(a) + ' ' + axTag(a, x.id)).join(', ') || '<span class="muted">nada</span>'}</span></div>`
   ).join('')}</div>
 <div class="row" style="margin-top:12px"><button class="sm" data-act="axdel" data-v="${x.id}">Apagar</button><span style="flex:1"></span><button class="pri" data-act="close">Fechar</button></div>`);
   modal.onclose = () => renderFlow();
@@ -86,7 +95,7 @@ function axTeamPicks(x) {
 function renderAxisLens() {
   if (!S.axes.length) {
     $('#lensAxis').innerHTML =
-      '<div class="panel"><p>Nenhum clash ou métrica ainda.</p><p class="small muted">Escreva na barra acima (ex.: <b>liberdade x segurança</b>, ou <b>m: quem é mais afetado</b> para métrica) e depois ligue os argumentos: arraste o código do argumento até o clash, ou toque nos eixos dentro do cartão.</p></div>';
+      '<div class="panel"><p>Nenhum clash, métrica ou caracterização ainda.</p><p class="small muted">Escreva na barra acima e dê Enter. Comece com m: para métrica ou k: para caracterização. Depois ligue os argumentos: arraste o código até o eixo, ou abra os detalhes do cartão. Um argumento pode argumentar dentro do eixo, fazer comparativa ou sopesamento, ou mostrar por que o eixo é relevante.</p></div>';
     return;
   }
   const none = S.args.filter(a => !Object.keys(a.ax).length);
@@ -97,17 +106,17 @@ function renderAxisLens() {
         const E = axEngage(x);
         const max = Math.max(...TEAMS.map(t => E[t].sum));
         return `<tr data-ax="${x.id}"><td class="n"><button class="x" data-act="axmove" data-v="${x.id}" data-d="-1" ${i ? '' : 'disabled'} aria-label="Subir">↑</button><button class="x" data-act="axmove" data-v="${x.id}" data-d="1" ${i < S.axes.length - 1 ? '' : 'disabled'} aria-label="Descer">↓</button></td>
-<td><button class="linkbtn" data-act="axedit" data-v="${x.id}"><b>${x.kind === 'm' ? '◇' : '⚔'} ${esc(x.title) || '?'}</b></button><div class="small muted">${AXK[x.kind]} · relevância <button class="linkbtn" data-act="axrel" data-ax="${x.id}" data-v="${(x.rel % 3) + 1}" title="Trocar relevância">${dots(x.rel)}</button>${x.by ? ' · trazido por ' + x.by : ''}</div>${x.note ? `<div class="small">${esc(x.note)}</div>` : ''}</td>
+<td><button class="linkbtn" data-act="axedit" data-v="${x.id}"><b>${AXI[x.kind]} ${esc(x.title) || '?'}</b></button><div class="small muted">${AXK[x.kind]} · relevância <button class="linkbtn" data-act="axrel" data-ax="${x.id}" data-v="${(x.rel % 3) + 1}" title="Trocar relevância">${dots(x.rel)}</button>${x.by ? ' · trazido por ' + x.by : ''}</div>${x.note ? `<div class="small">${esc(x.note)}</div>` : ''}</td>
 ${TEAMS.map(
   t =>
     `<td class="T${t} ${E[t].sum && E[t].sum === max ? 'axtop' : ''}">${
       E[t].args
         .map(
           a =>
-            `<div class="small"><a href="#" class="go" data-go="${a.id}"><span class="tc">${code(a)}</span></a> <i>${dots(a.ax[x.id])}</i> ${esc(a.title).slice(0, 40)}</div>`
+            `<div class="small"><a href="#" class="go" data-go="${a.id}"><span class="tc">${code(a)}</span></a> <i>${axTag(a, x.id)}</i> ${esc(a.title).slice(0, 40)}</div>`
         )
         .join('') || '<span class="muted small">não engajou</span>'
-    }${E[t].sum ? `<div class="small muted">soma ${E[t].sum}</div>` : ''}</td>`
+    }${E[t].sum ? `<div class="small muted">soma ${E[t].sum}${axKinds(E[t].args, x)}</div>` : ''}</td>`
 ).join('')}
 <td><div class="row" style="gap:4px">${axTeamPicks(x)}</div></td></tr>`;
       })

@@ -68,20 +68,12 @@ function endDrag(e) {
   if (!t) return;
   const a = argById(d.id);
   if (t.ax) {
-    const x = axById(t.ax);
-    if (!a || !x) return;
-    if (a.ax[x.id]) {
-      toast(code(a) + ' já está em ' + x.title + '. Ajuste a força no cartão.');
-      return;
-    }
-    a.ax[x.id] = 2;
-    save();
-    renderFlow();
-    toast(code(a) + ' → ' + x.title, () => {
-      delete a.ax[x.id];
-      save();
-      renderFlow();
-    });
+    axMenu(a, axById(t.ax), e.clientX, e.clientY);
+    return;
+  }
+  const b = argById(t.id);
+  if (a && b && !linkOptions(a, b).length) {
+    toast(linkWhyNot(a, b));
     return;
   }
   linkMenu(a, argById(t.id), e.clientX, e.clientY);
@@ -93,32 +85,63 @@ document.addEventListener('pointercancel', endDrag);
 function closePop() {
   document.querySelector('.pop')?.remove();
 }
+/* Menu ao soltar sobre outro argumento, separado em dois grupos: com a bancada oposta e com a própria mesa.
+ * O grupo que não se aplica a este par aparece apagado, para deixar claro onde cada ligação vale. */
 function linkMenu(a, b, x, y) {
   if (!a || !b) return;
   closePop();
   const opts = linkOptions(a, b);
-  const opp = side(teamOf(a)) !== side(teamOf(b));
-  const btn = (t, label, s, n) =>
-    `<button data-act="lk" data-src="${a.id}" data-tgt="${b.id}" data-t="${t}" ${s ? `data-s="${s}"` : ''}><kbd>${n}</kbd> ${label}</button>`;
+  const opp = isOpp(a, b);
   let n = 0;
-  const rows = [];
-  for (const t of opts) {
-    if (t === 'v')
-      rows.push(
-        `<div class="poprow"><span class="small muted">Verticaliza:</span>${[1, 2, 3].map(s => btn('v', FORCE[s], s, ++n)).join('')}</div>`
-      );
-    else rows.push(btn(t, LINK[t], 0, ++n));
-  }
-  if (opp) rows.push(btn('clash', 'Confronto direto', 0, ++n));
+  const btn = (t, label, s, on) =>
+    on
+      ? `<button data-act="lk" data-src="${a.id}" data-tgt="${b.id}" data-t="${t}" ${s ? `data-s="${s}"` : ''}><kbd>${++n}</kbd> ${label}</button>`
+      : `<button disabled>${label}</button>`;
+  const group = (title, L, here) =>
+    `<div class="popgrp ${here ? '' : 'off'}"><div class="pophd">${title}</div>${L.map(t =>
+      t === 'v'
+        ? `<div class="poprow"><span class="small muted">Verticaliza:</span>${[1, 2, 3].map(s => btn('v', FORCE[s], s, here && opts.includes('v'))).join('')}</div>`
+        : here && !opts.includes(t)
+          ? ''
+          : btn(t, LINK[t], 0, here && opts.includes(t))
+    ).join('')}${title === LGRP.opp[0] ? btn('clash', 'Confronto direto', 0, here) : ''}</div>`;
   const p = document.createElement('div');
   p.className = 'pop';
-  p.innerHTML = `<div class="small"><span class="T${teamOf(a)}"><span class="tc">${code(a)}</span></span> → <span class="T${teamOf(b)}"><span class="tc">${code(b)}</span></span></div>${rows.join('')}<button data-act="popx" class="x">Cancelar (Esc)</button>`;
+  p.innerHTML = `<div class="small"><span class="T${teamOf(a)}"><span class="tc">${code(a)}</span></span> → <span class="T${teamOf(b)}"><span class="tc">${code(b)}</span></span></div>${group(LGRP.opp[0], LINK_OPP, opp)}${group(LGRP.own[0], LINK_OWN, !opp)}<button data-act="popx" class="x">Cancelar (Esc)</button>`;
+  placePop(p, x, y);
+}
+function placePop(p, x, y) {
   document.body.appendChild(p);
   const r = p.getBoundingClientRect();
   p.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
   p.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
   p.querySelector('button')?.focus();
 }
+/* soltar sobre um eixo: escolher como o argumento engaja */
+function axMenu(a, x, cx, cy) {
+  if (!a || !x) return;
+  closePop();
+  const p = document.createElement('div');
+  p.className = 'pop';
+  p.innerHTML = `<div class="small"><span class="T${teamOf(a)}"><span class="tc">${code(a)}</span></span> → ${AXI[x.kind]} ${esc(x.title)}</div>${Object.entries(
+    AXT
+  )
+    .map(
+      ([k, v], i) =>
+        `<button data-act="lkax" data-src="${a.id}" data-ax="${x.id}" data-v="${k}" class="${a.ax[x.id] && axType(a, x.id) === k ? 'on' : ''}"><kbd>${i + 1}</kbd> ${AXTI[k] ? AXTI[k] + ' ' : ''}${v}</button>`
+    )
+    .join(
+      ''
+    )}${a.ax[x.id] ? `<button data-act="lkax" data-src="${a.id}" data-ax="${x.id}" data-v="">Desligar</button>` : ''}<button data-act="popx" class="x">Cancelar (Esc)</button>`;
+  placePop(p, cx, cy);
+}
+ACTS.lkax = b => {
+  const a = argById(b.dataset.src);
+  closePop();
+  if (!a || !axById(b.dataset.ax)) return false;
+  setAx(a, b.dataset.ax, b.dataset.v ? a.ax[b.dataset.ax] || 2 : 0, b.dataset.v);
+  SEL = a.id;
+};
 ACTS.lk = b => {
   const a = argById(b.dataset.src),
     t = argById(b.dataset.tgt);

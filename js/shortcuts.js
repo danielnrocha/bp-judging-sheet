@@ -18,7 +18,8 @@ const KEYS = [
       ['Enter', 'editar o título do argumento selecionado'],
       ['E', 'abrir detalhes do selecionado'],
       ['1  2  3', 'forte / ok / fraco no selecionado'],
-      ['P  M  C', 'de pé / mitigado / caiu no selecionado'],
+      ['S  M  C', 'de pé / mitigado / caiu no selecionado'],
+      ['P', 'registrar um POI no discurso atual'],
       ['Del', 'apagar o selecionado (dá para desfazer)']
     ]
   ],
@@ -30,16 +31,20 @@ const KEYS = [
       ['V', 'trocar lente: fala, ideia, métrica'],
       ['D', 'ir para a deliberação'],
       ['Esc', 'limpar seleção / fechar'],
-      ['?', 'esta ajuda']
+      ['?', 'esta ajuda'],
+      ['Alt (segurar)', 'mostra o atalho em cada botão']
     ]
   ]
 ];
 const QUICK = [
   ['>LO1 texto', 'responde LO1'],
   ['~LO1 texto', 'flipa LO1'],
-  ['+PM1 texto', 'complementa PM1'],
-  ['^PM1 texto', 'verticaliza PM1 (força média; ^3PM1 forte, ^1PM1 fraca)'],
-  ['texto #2', 'liga ao 2º clash/métrica da barra (só no fim; \\#2 deixa o texto como está)'],
+  ['-LO1 texto', 'mitiga LO1 (diminui o peso sem refutar)'],
+  ['=LO1 texto', 'sopesa LO1 (aceita, mas compara e diz o que pesa mais)'],
+  ['+PM1 texto', 'complementa PM1 (só segundas falas, na própria dupla)'],
+  ['^PM1 texto', 'verticaliza PM1 (só closing, no opening da bancada; ^3PM1 forte, ^1PM1 fraca)'],
+  ['* texto', 'caracterização (de um ator, do status quo, do mundo da moção)'],
+  ['texto #2', 'contribui para o 2º eixo da barra (#2s: sopesa esse eixo; só no fim, \\#2 deixa o texto como está)'],
   ['texto !', 'marca como forte (texto ? marca como fraco)']
 ];
 function keysModal() {
@@ -60,15 +65,27 @@ function parseQuick(v) {
   let t = v.trim(),
     link = null,
     q = '',
-    ax = 0;
-  const m = t.match(/^([>~+^])([123])?\s*((?:PM|LO|DPM|DLO|MG|MO|GW|OW)\d+)\b\s*(.*)$/i);
+    ax = 0,
+    axt = 'a',
+    kind = '';
+  /* "* texto" (with a space) is characterization; "*nota* sobre..." stays plain text */
+  if (/^\*\s+\S/.test(t)) {
+    kind = 'k';
+    t = t.replace(/^\*\s+/, '');
+  }
+  const m = t.match(/^([>~+^=-])([123])?\s*((?:PM|LO|DPM|DLO|MG|MO|GW|OW)\d+)\b\s*(.*)$/i);
   if (m) {
-    link = { t: { '>': 'r', '~': 'f', '+': 'c', '^': 'v' }[m[1]], code: m[3].toUpperCase(), s: m[2] ? +m[2] : 2 };
+    link = {
+      t: { '>': 'r', '~': 'f', '-': 'm', '=': 'w', '+': 'c', '^': 'v' }[m[1]],
+      code: m[3].toUpperCase(),
+      s: m[2] ? +m[2] : 2
+    };
     t = m[4];
   }
   /* "#N" only at the end (before an optional ! or ?); "\#N" keeps the text literal */
-  t = t.replace(/\s#([1-9])(?=\s*[!?]?$)/, (_, n) => {
+  t = t.replace(/\s#([1-9])([scr]?)(?=\s*[!?]?$)/i, (_, n, ty) => {
     ax = +n;
+    axt = ty ? 'c' : 'a'; // #2s: sopesa o eixo (c e r aceitos por compatibilidade)
     return '';
   });
   t = t.replace(/\\#(?=[1-9])/g, '#').trim();
@@ -79,7 +96,7 @@ function parseQuick(v) {
     q = 'w';
     t = t.slice(0, -1).trim();
   }
-  return { title: t, link, q, ax };
+  return { title: t, link, q, ax, axt, kind };
 }
 /* ordem visual dos cartões, para ↑ ↓ */
 const cardOrder = () =>
@@ -122,6 +139,9 @@ document.addEventListener('keydown', e => {
       done();
       f.focus();
     }
+  } else if (k === 'p' || k === 'P') {
+    done();
+    poiModal();
   } else if (k === 'r' || k === 'R') {
     done();
     resetT();
@@ -174,7 +194,7 @@ document.addEventListener('keydown', e => {
       renderFlow();
     };
     if (k === '1' || k === '2' || k === '3') set(() => (a.q = a.q === 'fmw'[+k - 1] ? '' : 'fmw'[+k - 1]));
-    else if (k === 'p' || k === 'P') set(() => (a.res = a.res === 'pe' ? '' : 'pe'));
+    else if (k === 's' || k === 'S') set(() => (a.res = a.res === 'pe' ? '' : 'pe'));
     else if (k === 'm' || k === 'M') set(() => (a.res = a.res === 'mi' ? '' : 'mi'));
     else if (k === 'c' || k === 'C') set(() => (a.res = a.res === 'cai' ? '' : 'cai'));
     else if (k === 'e' || k === 'E') set(() => (a.open = !a.open));
@@ -198,3 +218,21 @@ document.addEventListener('keydown', e => {
     }
   }
 });
+
+/* Segurando Alt, cada botão mostra o próprio atalho (atributo data-key). */
+const showKeys = on => document.body.classList.toggle('showkeys', on);
+document.addEventListener('keydown', e => {
+  // fora de campos de texto e sem Ctrl (AltGr no Windows chega como Ctrl+Alt e é usado para digitar)
+  const typing = e.target.closest && e.target.closest('input,textarea,select');
+  if (e.key === 'Alt' && !e.ctrlKey && !typing && (route.v === 'ficha' || route.v === 'delib')) {
+    e.preventDefault();
+    showKeys(true);
+  } else if (!e.altKey) showKeys(false);
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'Alt') {
+    e.preventDefault();
+    showKeys(false);
+  }
+});
+addEventListener('blur', () => showKeys(false));

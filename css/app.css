@@ -1089,3 +1089,244 @@ kbd {
   align-items: center;
   flex-wrap: wrap;
 }
+
+/* ---------- cabeçalho compacto (digitando, rolando) e modo foco ---------- */
+body.compact header.top .wrap > .toprow:first-child,
+body.compact #backT {
+  display: none;
+}
+body.compact #dbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+}
+body.compact #dbar > .toprow {
+  padding: 4px 0;
+  gap: 6px 10px;
+}
+body.compact #dbar > .toprow:first-child {
+  flex: 1 1 420px;
+}
+body.compact #dbar .tbar {
+  flex: 1 0 100%;
+}
+body.compact .clock {
+  font-size: 22px;
+}
+body.compact #motion {
+  padding: 4px 8px;
+  font-size: 14px;
+}
+body.compact .tabs a {
+  padding: 3px 8px;
+}
+body.compact html,
+html:has(body.compact) {
+  scroll-padding-top: 70px;
+}
+body.focusmode #setupBox,
+body.focusmode #v-ficha > .hint,
+body.focusmode #lensIdea > .hint,
+body.focusmode #lensAxis > .hint,
+body.focusmode .axes .axadd,
+body.focusmode .axes .axlbl,
+body.focusmode .lensbar .grow {
+  display: none;
+}
+body.focusmode .axes {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 3px 6px;
+  margin-top: 4px;
+  scrollbar-width: thin;
+}
+body.focusmode .axchip {
+  flex: 0 0 auto;
+}
+body.focusmode .lensbar {
+  margin-top: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+body.focusmode .seg button,
+body.focusmode .lensbar button {
+  min-height: 28px;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+body.focusmode .flow {
+  margin-top: 6px;
+}
+@media (max-width: 640px) {
+  body.compact #dbar > .toprow:first-child .grow {
+    display: none;
+  }
+  body.focusmode .lensbar .seg {
+    width: auto;
+  }
+}
+
+/* ---------- POIs ---------- */
+.poibtn {
+  font-weight: 700;
+}
+.pois {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.poichip {
+  font-size: 12px;
+  min-height: 24px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border-left: 3px solid var(--tc);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.poichip.no {
+  opacity: 0.6;
+  border-style: dashed;
+}
+#poiClock {
+  font-size: 34px;
+  min-width: 3.4ch;
+}
+#poiClock.long {
+  color: var(--bad);
+}
+.poim .pick kbd {
+  margin-right: 2px;
+}
+/* engajamento de argumento com eixo (detalhes do cartão) */
+.axrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  border-left: 3px solid transparent;
+  padding-left: 6px;
+}
+.axrow.on {
+  border-left-color: var(--tc);
+}
+.axrow > .small {
+  flex: 1 1 120px;
+}
+.pop > button.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+/* pendências */
+.pend {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.pend li {
+  font-size: 14px;
+  margin: 3px 0;
+}
+.pendbtn {
+  border-color: var(--warn);
+  color: var(--warn);
+  font-weight: 700;
+}
+
+/* ---------- tutorial ---------- */
+#tour {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+#tour .tspot {
+  position: fixed;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+  outline: 2px solid #fff;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+#tour .ttip {
+  position: fixed;
+  max-width: min(360px, calc(100vw - 16px));
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  transition:
+    top 0.2s ease,
+    left 0.2s ease;
+}
+#tour .ttip h3 {
+  margin: 2px 0 4px;
+}
+#tour .ttip p {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+#tourBtn.pulse {
+  animation: pulse 1.6s ease-in-out 3;
+  border-color: var(--cg);
+}
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--cg) 40%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #tour .tspot,
+  #tour .ttip {
+    transition: none;
+  }
+  #tourBtn.pulse {
+    animation: none;
+  }
+}
+
+/* ---------- atalhos visíveis segurando Alt ---------- */
+body.showkeys [data-key] {
+  position: relative;
+}
+body.showkeys [data-key]::after {
+  content: attr(data-key);
+  position: absolute;
+  bottom: -7px;
+  right: -5px;
+  z-index: 30;
+  background: var(--ink);
+  color: var(--bg);
+  font:
+    700 10px/1.5 ui-monospace,
+    monospace;
+  padding: 0 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 0 0 1.5px var(--bg);
+}
+/* dentro dos cartões, só no selecionado; "N" só no discurso atual */
+body.showkeys .arg:not(.sel) [data-key]::after,
+body.showkeys .speech:not(.live) form[data-key]::after {
+  display: none;
+}
+/* com Alt, nada pode cortar os badges */
+body.showkeys .seg,
+body.showkeys .axchip,
+body.showkeys .lensbar,
+body.showkeys .timer {
+  overflow: visible;
+}
+body.showkeys .seg button[data-key]::after {
+  right: 2px;
+}
+/* a barra de lentes fica acima dos eixos e do flow enquanto os badges aparecem */
+body.showkeys #lensBar {
+  position: relative;
+  z-index: 15; /* acima dos eixos e do flow, abaixo do cabeçalho fixo (20) */
+}
