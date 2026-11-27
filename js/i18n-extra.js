@@ -680,9 +680,9 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
     'weighs against LO1 (grants it, but compares and says what matters more)',
     'sopesa LO1 (lo acepta, pero compara y dice qué pesa más)'
   ],
-  'contribui para o 2º eixo da barra (#2s: sopesa esse eixo)': [
-    'contributes to the 2nd axis in the bar (#2s: weighs that axis)',
-    'contribuye al 2º eje de la barra (#2s: sopesa ese eje)'
+  'contribui para o 2º eixo da barra (#2s: sopesa esse eixo; só no fim, \\#2 deixa o texto como está)': [
+    'contributes to the 2nd axis in the bar (#2s: weighs that axis; only at the end, \\#2 keeps the text as is)',
+    'contribuye al 2º eje de la barra (#2s: sopesa ese eje; solo al final, \\#2 deja el texto como está)'
   ],
   'mostra o atalho em cada botão': ['shows the shortcut on each button', 'muestra el atajo en cada botón'],
   'Alt (segurar)': ['Alt (hold)', 'Alt (mantener)'],
