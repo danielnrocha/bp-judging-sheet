@@ -758,7 +758,12 @@
       /^Decisão com split\. Votos: (.+)\.$/,
       m => pick('Split decision. Votes: ', 'Decisión dividida. Votos: ') + m[1] + '.'
     ],
-    [/^Decisão com split\. (.+)$/, m => pick('Split decision. ', 'Decisión dividida. ') + words(m[1])],
+    [
+      /^Decisão com split\. (.+)$/,
+      m =>
+        pick('Split decision. ', 'Decisión dividida. ') +
+        words(m[1]).replace(/\((majority|mayoría): ([^)]*)\)/g, (_, k, v) => `(${k}: ${v.split(' e ').join(pick(' and ', ' y '))})`)
+    ],
     [/^Resultado: (.+)\.$/, m => pick('Result: ', 'Resultado: ') + m[1].replace(/(\d)º/g, (_, n) => ord(+n)) + '.'],
     [
       /^Empate cíclico resolvido por Ranked Pairs\. Comparação ignorada: (.+)\.$/,
