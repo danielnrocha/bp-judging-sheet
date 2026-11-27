@@ -65,7 +65,7 @@ Any static hosting works: GitHub Pages, Vercel, Netlify or Cloudflare Pages. Doc
 
 ## Taking notes fast
 
-- Type an idea and press Enter. Prefixes link it as you type: `>LO1 text` responds to LO1, `~LO1` flips it, `-LO1` mitigates it, `=LO1` weighs against it, `+PM1` complements PM1, `^PM1` deepens it (`^3PM1` strong, `^1PM1` weak). `*text` is a characterization. `#2` links it to the 2nd clash or metric (`#2s` weighs that axis). Ending with ` !` marks it strong, ` ?` weak. A link the rules do not allow is not made, and a message says why.
+- Type an idea and press Enter. Prefixes link it as you type: `>LO1 text` responds to LO1, `~LO1` flips it, `-LO1` mitigates it, `=LO1` weighs against it, `+PM1` complements PM1, `^PM1` deepens it (`^3PM1` strong, `^1PM1` weak). `* text` (with a space) is a characterization. `#2` at the end links it to the 2nd clash or metric (`#2s` weighs that axis; `\#2` keeps it as text). Ending with ` !` marks it strong, ` ?` weak. A link the rules do not allow is not made, and a message says why.
 - Drag the code of an argument (e.g. `LO1`) onto another argument to link them, or onto a clash, metric or characterization in the bar above the flow.
 - With an argument selected: `1` `2` `3` quality, `S` `M` `C` standing / mitigated / fell, `E` details, `Del` delete. Elsewhere: `Space` timer, `N` new idea, `P` POI, `]` `[` next / previous speech, `+` `-` adjust 10 s, `F` focus, `V` switch view, `D` deliberation, `?` all shortcuts. Hold `Alt` to see each button's shortcut on the button itself.
 - Click the clock to change speech length (7, 5, 4, 3 minutes or any value), protected time and deliberation time.

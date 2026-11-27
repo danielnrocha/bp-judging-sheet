@@ -418,6 +418,10 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
   'POI longo: o orador pode cortar': ['Long POI: the speaker may cut it', 'POI largo: el orador puede cortarlo'],
   'Escolha quem fez o POI': ['Choose who offered the POI', 'Elige quién hizo el POI'],
   'POI recusado registrado': ['Declined POI logged', 'POI rechazado registrado'],
+  'Closing mitigando a própria opening pode ser knife. Só vale se a opening concedeu algo que torna o debate impossível de ganhar ou só para limitar a closing, fez squirrel ou contra-proposta inválida, ou afirmou um fato claramente falso.': [
+    'Closing mitigating its own opening may be knifing. It is only fine if the opening conceded something that makes the debate unwinnable or only to limit the closing, ran a squirrel or an invalid counter-model, or stated a plainly false fact.',
+    'Cierre mitigando su propia apertura puede ser knife. Solo vale si la apertura concedió algo que hace el debate imposible de ganar o solo para limitar al cierre, hizo squirrel o contrapropuesta inválida, o afirmó un hecho claramente falso.'
+  ],
   'POI registrado': ['POI logged', 'POI registrado'],
   'POI apagado': ['POI deleted', 'POI borrado'],
   'nenhum POI aceito': ['no POI taken', 'ningún POI aceptado'],
@@ -494,10 +498,10 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
       'Name the axes of the debate. Type and press Enter; use "m:" for a metric and "k:" for a characterization. Tap an axis to highlight its arguments.',
       'Nombra los ejes del debate. Escribe y pulsa Enter; usa "m:" para métrica y "k:" para caracterización. Toca un eje para destacar sus argumentos.'
     ],
-  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, +PM1 complementa, ^PM1 verticaliza, *texto caracterização, #1 liga ao 1º eixo, " !" forte.':
+  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, +PM1 complementa, ^PM1 verticaliza, * texto caracterização, #1 liga ao 1º eixo, " !" forte.':
     [
       'One line per idea, Enter. Text shortcuts: >LO1 responds, ~LO1 flips, +PM1 complements, ^PM1 deepens, *text characterization, #1 links to the 1st axis, " !" strong.',
-      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, +PM1 complementa, ^PM1 profundiza, *texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
+      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, +PM1 complementa, ^PM1 profundiza, * texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
     ],
   'Arraste para ligar': ['Drag to link', 'Arrastra para enlazar'],
   'Arraste o código até outro argumento: responde ou flipa o outro lado; complementa a primeira fala da dupla (só segundas falas); verticaliza o opening (só closing). Solte num eixo para argumentar, comparar ou mostrar relevância.':
@@ -671,10 +675,10 @@ Object.assign(window.BP_I18N_EXTRA.dict, {
       'Drag the code onto something said earlier. The menu splits: with the opposing team (respond, flip, mitigate, weigh) and with your own side (complement your pair, or the closing deepens, mitigates or weighs against the opening). Drop it on an axis to contribute or weigh.',
       'Arrastra el código hasta algo dicho antes. El menú separa: con la bancada opuesta (responde, voltea, mitiga, sopesa) y con la propia mesa (complementa la dupla, o el cierre profundiza, mitiga o sopesa la apertura). Suéltalo en un eje para contribuir o sopesar.'
     ],
-  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 verticaliza, *texto caracterização, #1 liga ao 1º eixo, " !" forte.':
+  'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 verticaliza, * texto caracterização, #1 liga ao 1º eixo, " !" forte.':
     [
       'One line per idea, Enter. Text shortcuts: >LO1 responds, ~LO1 flips, -LO1 mitigates, =LO1 weighs, +PM1 complements, ^PM1 deepens, *text characterization, #1 links to the 1st axis, " !" strong.',
-      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 profundiza, *texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
+      'Una línea por idea, Enter. Atajos en el texto: >LO1 responde, ~LO1 voltea, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 profundiza, * texto caracterización, #1 enlaza al 1er eje, " !" fuerte.'
     ],
   'Todos os atalhos de teclado. Atalho: ?. Segurando Alt, cada botão mostra o seu atalho.': [
     'All keyboard shortcuts. Shortcut: ?. Hold Alt and each button shows its shortcut.',

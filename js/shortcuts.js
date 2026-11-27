@@ -43,7 +43,7 @@ const QUICK = [
   ['=LO1 texto', 'sopesa LO1 (aceita, mas compara e diz o que pesa mais)'],
   ['+PM1 texto', 'complementa PM1 (só segundas falas, na própria dupla)'],
   ['^PM1 texto', 'verticaliza PM1 (só closing, no opening da bancada; ^3PM1 forte, ^1PM1 fraca)'],
-  ['*texto', 'caracterização (de um ator, do status quo, do mundo da moção)'],
+  ['* texto', 'caracterização (de um ator, do status quo, do mundo da moção)'],
   ['texto #2', 'contribui para o 2º eixo da barra (#2s: sopesa esse eixo; só no fim, \\#2 deixa o texto como está)'],
   ['texto !', 'marca como forte (texto ? marca como fraco)']
 ];
@@ -68,9 +68,10 @@ function parseQuick(v) {
     ax = 0,
     axt = 'a',
     kind = '';
-  if (/^\*\s*\S/.test(t)) {
+  /* "* texto" (with a space) is characterization; "*nota* sobre..." stays plain text */
+  if (/^\*\s+\S/.test(t)) {
     kind = 'k';
-    t = t.replace(/^\*\s*/, '');
+    t = t.replace(/^\*\s+/, '');
   }
   const m = t.match(/^([>~+^=-])([123])?\s*((?:PM|LO|DPM|DLO|MG|MO|GW|OW)\d+)\b\s*(.*)$/i);
   if (m) {

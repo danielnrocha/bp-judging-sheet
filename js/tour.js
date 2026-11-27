@@ -40,7 +40,7 @@ const TOUR_FICHA = [
   [
     '#flow .speech.live form.add, #flow form.add',
     'Anotar',
-    'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 verticaliza, *texto caracterização, #1 liga ao 1º eixo, " !" forte.'
+    'Uma linha por ideia, Enter. Atalhos no texto: >LO1 responde, ~LO1 flipa, -LO1 mitiga, =LO1 sopesa, +PM1 complementa, ^PM1 verticaliza, * texto caracterização, #1 liga ao 1º eixo, " !" forte.'
   ],
   [
     '#flow .arg .grip',

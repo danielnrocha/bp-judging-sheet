@@ -104,6 +104,12 @@ function setLink(a, id, t, s) {
   if (a.kind === 'c' && t === 'w') a.kind = 'p';
   if (a.kind === 'c' && t === 'v') a.kind = 'x';
   syncTo(a);
+  /* closing contradicting its own opening is usually knifing (manual: only four exceptions) */
+  const b = t === 'm' && argById(id);
+  if (b && isClosing(teamOf(a)) && !isOpp(a, b))
+    toast(
+      'Closing mitigando a própria opening pode ser knife. Só vale se a opening concedeu algo que torna o debate impossível de ganhar ou só para limitar a closing, fez squirrel ou contra-proposta inválida, ou afirmou um fato claramente falso.'
+    );
 }
 function unsetLink(a, id) {
   dropInc();
