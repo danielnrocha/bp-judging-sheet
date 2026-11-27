@@ -171,9 +171,9 @@ window.BP_I18N_EXTRA = {
     'limpar seleção / fechar': ['clear selection / close', 'limpiar selección / cerrar'],
     'esta ajuda': ['this help', 'esta ayuda'],
     'No campo "Nova ideia"': ['In the "New idea" field', 'En el campo "Nueva idea"'],
-    'liga ao 2º clash/métrica da barra': [
-      'links to the 2nd clash/metric in the bar',
-      'enlaza con el 2º clash/métrica de la barra'
+    'liga ao 2º clash/métrica da barra (só no fim; \\#2 deixa o texto como está)': [
+      'links to the 2nd clash/metric in the bar (only at the end; \\#2 keeps the text as is)',
+      'enlaza con el 2º clash/métrica de la barra (solo al final; \\#2 deja el texto como está)'
     ],
     'marca como forte (texto ? marca como fraco)': [
       'marks as strong (text ? marks as weak)',
