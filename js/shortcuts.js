@@ -39,7 +39,7 @@ const QUICK = [
   ['~LO1 texto', 'flipa LO1'],
   ['+PM1 texto', 'complementa PM1'],
   ['^PM1 texto', 'verticaliza PM1 (força média; ^3PM1 forte, ^1PM1 fraca)'],
-  ['texto #2', 'liga ao 2º clash/métrica da barra'],
+  ['texto #2', 'liga ao 2º clash/métrica da barra (só no fim; \\#2 deixa o texto como está)'],
   ['texto !', 'marca como forte (texto ? marca como fraco)']
 ];
 function keysModal() {
@@ -66,11 +66,12 @@ function parseQuick(v) {
     link = { t: { '>': 'r', '~': 'f', '+': 'c', '^': 'v' }[m[1]], code: m[3].toUpperCase(), s: m[2] ? +m[2] : 2 };
     t = m[4];
   }
-  t = t.replace(/(^|\s)#([1-9])(?=\s|$)/, (_, p, n) => {
+  /* "#N" only at the end (before an optional ! or ?); "\#N" keeps the text literal */
+  t = t.replace(/\s#([1-9])(?=\s*[!?]?$)/, (_, n) => {
     ax = +n;
-    return p;
+    return '';
   });
-  t = t.trim();
+  t = t.replace(/\\#(?=[1-9])/g, '#').trim();
   if (/\s!$/.test(t) || t === '!') {
     q = 'f';
     t = t.slice(0, -1).trim();
